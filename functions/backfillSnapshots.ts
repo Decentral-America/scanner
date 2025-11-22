@@ -11,10 +11,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
     }
 
-    // Fetch all existing snapshots to find the lowest height
-    let allSnapshotsResult = await base44.asServiceRole.entities.BlockchainSnapshot.list('', 10000);
-    if (typeof allSnapshotsResult === 'string') allSnapshotsResult = JSON.parse(allSnapshotsResult);
-    const allSnapshots = Array.isArray(allSnapshotsResult) ? allSnapshotsResult : [];
+    // Fetch recent snapshots to find the lowest height (limit to avoid 4MB response size)
+    const allSnapshots = await base44.asServiceRole.entities.BlockchainSnapshot.list('snapshot_height', 100);
     
     if (allSnapshots.length === 0) {
       // No snapshots exist yet, start from current height

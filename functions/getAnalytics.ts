@@ -187,9 +187,7 @@ Deno.serve(async (req) => {
     // ============================================
     // 3. WEBSITE METRICS
     // ============================================
-    let allPageViewsResult = await base44.asServiceRole.entities.PageView.list('-created_date', 10000);
-    if (typeof allPageViewsResult === 'string') allPageViewsResult = JSON.parse(allPageViewsResult);
-    const allPageViews = Array.isArray(allPageViewsResult) ? allPageViewsResult : [];
+    const allPageViews = await base44.asServiceRole.entities.PageView.list('-created_date', 5000);
     
     const filteredPageViews = allPageViews.filter(pv => {
       const pvDate = new Date(pv.created_date);
@@ -284,9 +282,7 @@ Deno.serve(async (req) => {
     // ============================================
     // 4. PLATFORM ANALYTICS
     // ============================================
-    let allUsersResult = await base44.asServiceRole.entities.User.list('', 10000);
-    if (typeof allUsersResult === 'string') allUsersResult = JSON.parse(allUsersResult);
-    const allUsers = Array.isArray(allUsersResult) ? allUsersResult : [];
+    const allUsers = await base44.asServiceRole.entities.User.list('', 1000);
     
     const recentlyActiveUsers = allUsers.filter(u => {
       const lastActive = new Date(u.updated_date);
@@ -310,9 +306,7 @@ Deno.serve(async (req) => {
     // ============================================
     // 5. WITHDRAWAL ANALYTICS
     // ============================================
-    let allWithdrawalsResult = await base44.asServiceRole.entities.WithdrawalRequest.list('-created_date', 10000);
-    if (typeof allWithdrawalsResult === 'string') allWithdrawalsResult = JSON.parse(allWithdrawalsResult);
-    const allWithdrawals = Array.isArray(allWithdrawalsResult) ? allWithdrawalsResult : [];
+    const allWithdrawals = await base44.asServiceRole.entities.WithdrawalRequest.list('-created_date', 1000);
     
     const filteredWithdrawals = allWithdrawals.filter(w => {
       const wDate = new Date(w.created_date);
@@ -341,9 +335,7 @@ Deno.serve(async (req) => {
     // ============================================
     // 6. LOGO REQUEST ANALYTICS
     // ============================================
-    let allLogoRequestsResult = await base44.asServiceRole.entities.AssetLogoRequest.list('-created_date', 10000);
-    if (typeof allLogoRequestsResult === 'string') allLogoRequestsResult = JSON.parse(allLogoRequestsResult);
-    const allLogoRequests = Array.isArray(allLogoRequestsResult) ? allLogoRequestsResult : [];
+    const allLogoRequests = await base44.asServiceRole.entities.AssetLogoRequest.list('-created_date', 1000);
     
     const filteredLogoRequests = allLogoRequests.filter(lr => {
       const lrDate = new Date(lr.created_date);
