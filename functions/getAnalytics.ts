@@ -85,9 +85,17 @@ Deno.serve(async (req) => {
     
     console.log('Raw snapshots result type:', typeof allSnapshotsResult);
     console.log('Is array?', Array.isArray(allSnapshotsResult));
+    console.log('Keys:', allSnapshotsResult ? Object.keys(allSnapshotsResult).slice(0, 10) : 'null');
+    console.log('First item sample:', allSnapshotsResult ? JSON.stringify(allSnapshotsResult[0] || allSnapshotsResult).substring(0, 200) : 'null');
     
-    // CRITICAL: Ensure allSnapshots is ALWAYS an array
-    const allSnapshots = Array.isArray(allSnapshotsResult) ? allSnapshotsResult : [];
+    // Handle multiple possible response formats from SDK
+    let allSnapshots = [];
+    if (Array.isArray(allSnapshotsResult)) {
+      allSnapshots = allSnapshotsResult;
+    } else if (allSnapshotsResult && typeof allSnapshotsResult === 'object') {
+      // Try common property names that might contain the array
+      allSnapshots = allSnapshotsResult.data || allSnapshotsResult.items || allSnapshotsResult.results || [];
+    }
     
     console.log(`Fetched ${allSnapshots.length} blockchain snapshots from database`);
     
