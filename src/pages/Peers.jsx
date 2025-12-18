@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Network, CheckCircle, Globe, XCircle, Pause, MapPin } from "lucide-react";
+import { Network, CheckCircle, Globe, XCircle, Pause, MapPin, Leaf } from "lucide-react";
 import { fromUnix } from "../components/utils/formatters";
 import { useLanguage } from "../components/contexts/LanguageContext";
 
@@ -82,11 +82,26 @@ export default function Peers() {
             peer.nodeName.toLowerCase().includes(reg.node_name.toLowerCase())
           );
 
+          // Check green hosting
+          let isGreenHost = false;
+          let hostedBy = null;
+          try {
+            const hostname = ip; // Use IP as hostname for green check
+            const greenResponse = await fetch(`https://api.thegreenwebfoundation.org/api/v3/greencheck/${hostname}`);
+            const greenData = await greenResponse.json();
+            isGreenHost = greenData.green || false;
+            hostedBy = greenData.hosted_by || null;
+          } catch (error) {
+            console.error(`Failed to check green hosting for ${ip}:`, error);
+          }
+
           newEnrichedData[address] = {
             country: geoData.country_name || 'Unknown',
             countryCode: geoData.country_code || '',
             city: geoData.city || '',
-            registeredName: registration?.node_name || peer.nodeName || null
+            registeredName: registration?.node_name || peer.nodeName || null,
+            isGreen: isGreenHost,
+            hostedBy: hostedBy
           };
         } catch (error) {
           console.error(`Failed to enrich peer ${address}:`, error);
@@ -111,6 +126,7 @@ export default function Peers() {
             <TableHead>{t("declaredAddress")}</TableHead>
             <TableHead>{t("nodeName")}</TableHead>
             <TableHead>{t("country")}</TableHead>
+            <TableHead>Green Host</TableHead>
             <TableHead>{t("lastSeen")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -131,6 +147,9 @@ export default function Peers() {
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-4 w-28" />
@@ -171,6 +190,22 @@ export default function Peers() {
                       <span className="text-gray-400">...</span>
                     )}
                   </TableCell>
+                  <TableCell>
+                    {enrichedData ? (
+                      enrichedData.isGreen ? (
+                        <Badge className="bg-green-100 text-green-800 gap-1">
+                          <Leaf className="w-3 h-3" />
+                          Green
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="gap-1">
+                          Standard
+                        </Badge>
+                      )
+                    ) : (
+                      <span className="text-gray-400">...</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-gray-600">
                     {peer.lastSeen ? fromUnix(peer.lastSeen) : "N/A"}
                   </TableCell>
@@ -179,7 +214,7 @@ export default function Peers() {
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+              <TableCell colSpan={6} className="text-center text-gray-500 py-8">
                 {t("noPeersFound")}
               </TableCell>
             </TableRow>

@@ -20,6 +20,7 @@ import TransactionMap from './pages/TransactionMap';
 import UnconfirmedTransactions from './pages/UnconfirmedTransactions';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
+import Sustainability from './pages/Sustainability';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "UnconfirmedTransactions": UnconfirmedTransactions,
     "UserDashboard": UserDashboard,
     "UserProfile": UserProfile,
+    "Sustainability": Sustainability,
 }
 
 export const pagesConfig = {
