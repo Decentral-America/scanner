@@ -1,7 +1,7 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { blockchainAPI } from "../components/utils/blockchain";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -14,12 +14,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Network, CheckCircle, Globe, XCircle, Pause } from "lucide-react";
+import { Network, CheckCircle, Globe, XCircle, Pause, MapPin } from "lucide-react";
 import { fromUnix } from "../components/utils/formatters";
 import { useLanguage } from "../components/contexts/LanguageContext";
 
 export default function Peers() {
   const { t } = useLanguage();
+  const [enrichedPeers, setEnrichedPeers] = useState({});
+  const [nodeRegistrations, setNodeRegistrations] = useState([]);
 
   const { data: connected, isLoading: connectedLoading } = useQuery({
     queryKey: ["peers", "connected"],
@@ -41,6 +43,65 @@ export default function Peers() {
     queryFn: () => blockchainAPI.getBlacklistedPeers(),
   });
 
+  // Fetch node registrations
+  useEffect(() => {
+    const fetchRegistrations = async () => {
+      try {
+        const registrations = await base44.entities.NodeRegistration.list();
+        setNodeRegistrations(registrations);
+      } catch (error) {
+        console.error("Failed to fetch node registrations:", error);
+      }
+    };
+    fetchRegistrations();
+  }, []);
+
+  // Enrich peer data with node names and countries
+  useEffect(() => {
+    const enrichPeers = async (peers) => {
+      if (!peers?.peers?.length) return;
+
+      const newEnrichedData = {};
+      
+      for (const peer of peers.peers) {
+        const address = peer.address || peer.declaredAddress;
+        if (!address || enrichedPeers[address]) continue;
+
+        try {
+          // Extract IP from address (format: /ip:port)
+          const ip = address.split('/')[1]?.split(':')[0];
+          if (!ip) continue;
+
+          // Get geolocation data
+          const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+          const geoData = await geoResponse.json();
+          
+          // Find matching node registration by wallet address
+          const registration = nodeRegistrations.find(reg => 
+            reg.status === 'approved' && peer.nodeName && 
+            peer.nodeName.toLowerCase().includes(reg.node_name.toLowerCase())
+          );
+
+          newEnrichedData[address] = {
+            country: geoData.country_name || 'Unknown',
+            countryCode: geoData.country_code || '',
+            city: geoData.city || '',
+            registeredName: registration?.node_name || peer.nodeName || null
+          };
+        } catch (error) {
+          console.error(`Failed to enrich peer ${address}:`, error);
+        }
+      }
+
+      setEnrichedPeers(prev => ({ ...prev, ...newEnrichedData }));
+    };
+
+    if (connected?.peers) enrichPeers(connected);
+    if (all?.peers) enrichPeers(all);
+    if (suspended?.peers) enrichPeers(suspended);
+    if (blacklisted?.peers) enrichPeers(blacklisted);
+  }, [connected, all, suspended, blacklisted, nodeRegistrations]);
+
   const PeerTable = ({ peers, isLoading }) => (
     <div className="overflow-x-auto">
       <Table>
@@ -49,6 +110,7 @@ export default function Peers() {
             <TableHead>{t("address")}</TableHead>
             <TableHead>{t("declaredAddress")}</TableHead>
             <TableHead>{t("nodeName")}</TableHead>
+            <TableHead>{t("country")}</TableHead>
             <TableHead>{t("lastSeen")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -68,28 +130,56 @@ export default function Peers() {
                     <Skeleton className="h-4 w-24" />
                   </TableCell>
                   <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
                     <Skeleton className="h-4 w-28" />
                   </TableCell>
                 </TableRow>
               ))
           ) : peers && peers.peers?.length > 0 ? (
-            peers.peers.map((peer, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-mono text-sm">
-                  {peer.address || "N/A"}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {peer.declaredAddress || "N/A"}
-                </TableCell>
-                <TableCell>{peer.nodeName || t("unknownNode")}</TableCell>
-                <TableCell className="text-sm text-gray-600">
-                  {peer.lastSeen ? fromUnix(peer.lastSeen) : "N/A"}
-                </TableCell>
-              </TableRow>
-            ))
+            peers.peers.map((peer, index) => {
+              const address = peer.address || peer.declaredAddress;
+              const enrichedData = enrichedPeers[address];
+              const nodeName = enrichedData?.registeredName || peer.nodeName || t("unknownNode");
+              
+              return (
+                <TableRow key={index}>
+                  <TableCell className="font-mono text-sm">
+                    {peer.address || "N/A"}
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {peer.declaredAddress || "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {nodeName}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {enrichedData ? (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3 h-3 text-gray-400" />
+                        <span>{enrichedData.country}</span>
+                        {enrichedData.countryCode && (
+                          <span className="text-xl">
+                            {String.fromCodePoint(...[...enrichedData.countryCode.toUpperCase()].map(c => 127397 + c.charCodeAt()))}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">...</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {peer.lastSeen ? fromUnix(peer.lastSeen) : "N/A"}
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+              <TableCell colSpan={5} className="text-center text-gray-500 py-8">
                 {t("noPeersFound")}
               </TableCell>
             </TableRow>
