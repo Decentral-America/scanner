@@ -695,7 +695,7 @@ export default function UserDashboard() {
 
       {/* Tabs */}
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8">
           {user?.node_owner && (
             <>
               <TabsTrigger value="node-owner">
@@ -713,6 +713,10 @@ export default function UserDashboard() {
               <TabsTrigger value="tutorials">
                 <Activity className="w-4 h-4 mr-2" />
                 Tutorials
+              </TabsTrigger>
+              <TabsTrigger value="node-earnings">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Node Earnings
               </TabsTrigger>
               <TabsTrigger value="node-config"> {/* Moved inside node_owner check */}
                 <Settings className="w-4 h-4 mr-2" />
@@ -1297,6 +1301,177 @@ export default function UserDashboard() {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
+        {/* Node Earnings Tab */}
+        {user?.node_owner && (
+          <TabsContent value="node-earnings" className="space-y-6">
+            <Card className="border-none shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Node Earnings Calculator
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-gray-700 mb-6">
+                  Calculate your potential node earnings based on your ownership percentage and locked DCC tokens.
+                </p>
+
+                {/* Current Configuration */}
+                <Card className="border-2 border-green-200 mb-6">
+                  <CardHeader className="bg-green-50">
+                    <CardTitle className="text-lg text-gray-900">Your Current Configuration</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label className="text-sm text-gray-600">Node Ownership Percentage</Label>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="text-3xl font-bold text-green-700">
+                            {user?.node_ownership_percentage || 0}%
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-gray-600">Locked DCC Tokens</Label>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="text-3xl font-bold text-green-700">
+                            {formatAmount(user?.locked_dcc_tokens || 0, 0)} DCC
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Earnings Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-blue-200 rounded-xl">
+                          <Coins className="w-6 h-6 text-blue-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Block Rewards</p>
+                          <p className="text-xs text-gray-500">Per generated block</p>
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-700">
+                        {(6 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2">
+                        Based on 6 DCC reward per block
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-none shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-purple-200 rounded-xl">
+                          <Activity className="w-6 h-6 text-purple-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Daily Estimate</p>
+                          <p className="text-xs text-gray-500">~1440 blocks per day</p>
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-purple-700">
+                        {(6 * 1440 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2">
+                        Approximate daily earnings
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Monthly & Yearly Projections */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Earnings Projections</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-2">Monthly Earnings</p>
+                        <p className="text-2xl font-bold text-orange-700">
+                          {(6 * 1440 * 30 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">~30 days</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-2">Yearly Earnings</p>
+                        <p className="text-2xl font-bold text-yellow-700">
+                          {(6 * 1440 * 365 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">~365 days</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-2">ROI Timeline</p>
+                        <p className="text-2xl font-bold text-green-700">
+                          {user?.locked_dcc_tokens && user?.node_ownership_percentage > 0
+                            ? ((user.locked_dcc_tokens / (6 * 1440 * 365 * user.node_ownership_percentage / 100)) * 365).toFixed(1)
+                            : "N/A"} days
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">To recover locked DCC</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Additional Revenue Sources */}
+                <Card className="border-none shadow-lg mt-6 bg-gradient-to-br from-indigo-50 to-purple-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Additional Revenue Sources</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-indigo-200">
+                        <div className="p-2 bg-indigo-100 rounded-lg">
+                          <DollarSign className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Casino Revenue Share</h4>
+                          <p className="text-sm text-gray-600">
+                            Node owners receive a share of CR Coin Casino profits based on ownership percentage.
+                          </p>
+                          <Link to="#" onClick={(e) => { e.preventDefault(); document.querySelector('[value="node-apps"]')?.click(); }} className="text-indigo-600 text-sm font-medium mt-2 inline-block">
+                            View Casino Earnings →
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <Receipt className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Transaction Fees</h4>
+                          <p className="text-sm text-gray-600">
+                            Your node earns a portion of all transaction fees processed on the network.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Info Note */}
+                <Alert className="mt-6 border-blue-200 bg-blue-50">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    <strong>Note:</strong> These calculations are estimates based on current block rewards and network performance. 
+                    Actual earnings may vary based on network conditions, block generation times, and other factors.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
           </TabsContent>
