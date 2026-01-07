@@ -1256,6 +1256,27 @@ export default function UserDashboard() {
 
                 <div className="space-y-6">
                   <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">DCC Ecosystem Overview</h3>
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="aspect-video">
+                        <iframe
+                          src="https://player.vimeo.com/video/1152063295?h=8234a136f9&title=0&byline=0&portrait=0"
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-semibold text-gray-900 mb-1">DCC Ecosystem Overview Video</h4>
+                        <p className="text-sm text-gray-600">
+                          Get a comprehensive overview of the DCC ecosystem and its components.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Getting Started</h3>
                     <div className="bg-white rounded-lg shadow-md overflow-hidden">
                       <div className="aspect-video">
