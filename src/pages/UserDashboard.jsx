@@ -1349,82 +1349,18 @@ export default function UserDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Earnings Breakdown */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-blue-200 rounded-xl">
-                          <Coins className="w-6 h-6 text-blue-700" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Block Rewards</p>
-                          <p className="text-xs text-gray-500">Per generated block</p>
-                        </div>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-700">
-                        {(6 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
-                      </p>
-                      <p className="text-xs text-gray-600 mt-2">
-                        Based on 6 DCC reward per block
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-purple-200 rounded-xl">
-                          <Activity className="w-6 h-6 text-purple-700" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Daily Estimate</p>
-                          <p className="text-xs text-gray-500">~1440 blocks per day</p>
-                        </div>
-                      </div>
-                      <p className="text-2xl font-bold text-purple-700">
-                        {(6 * 1440 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
-                      </p>
-                      <p className="text-xs text-gray-600 mt-2">
-                        Approximate daily earnings
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Monthly & Yearly Projections */}
-                <Card className="border-none shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Earnings Projections</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-2">Monthly Earnings</p>
-                        <p className="text-2xl font-bold text-orange-700">
-                          {(6 * 1440 * 30 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">~30 days</p>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-2">Yearly Earnings</p>
-                        <p className="text-2xl font-bold text-yellow-700">
-                          {(6 * 1440 * 365 * (user?.node_ownership_percentage || 0) / 100).toFixed(2)} DCC
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">~365 days</p>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-2">ROI Timeline</p>
-                        <p className="text-2xl font-bold text-green-700">
-                          {user?.locked_dcc_tokens && user?.node_ownership_percentage > 0
-                            ? ((user.locked_dcc_tokens / (6 * 1440 * 365 * user.node_ownership_percentage / 100)) * 365).toFixed(1)
-                            : "N/A"} days
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">To recover locked DCC</p>
+                {/* Pending Development Notice */}
+                <Card className="border-none shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 mb-6">
+                  <CardContent className="p-8 text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="p-4 bg-amber-200 rounded-full">
+                        <Clock className="w-12 h-12 text-amber-700" />
                       </div>
                     </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">PENDING UPDATE RELEASE</h3>
+                    <p className="text-gray-700">
+                      The earnings calculator is still in development. Detailed earnings projections and ROI calculations will be available soon.
+                    </p>
                   </CardContent>
                 </Card>
 
