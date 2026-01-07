@@ -15,12 +15,12 @@ import NetworkStatistics from './pages/NetworkStatistics';
 import Node from './pages/Node';
 import NodeRegistration from './pages/NodeRegistration';
 import Peers from './pages/Peers';
+import Sustainability from './pages/Sustainability';
 import Transaction from './pages/Transaction';
 import TransactionMap from './pages/TransactionMap';
 import UnconfirmedTransactions from './pages/UnconfirmedTransactions';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
-import Sustainability from './pages/Sustainability';
 import __Layout from './Layout.jsx';
 
 
@@ -42,12 +42,12 @@ export const PAGES = {
     "Node": Node,
     "NodeRegistration": NodeRegistration,
     "Peers": Peers,
+    "Sustainability": Sustainability,
     "Transaction": Transaction,
     "TransactionMap": TransactionMap,
     "UnconfirmedTransactions": UnconfirmedTransactions,
     "UserDashboard": UserDashboard,
     "UserProfile": UserProfile,
-    "Sustainability": Sustainability,
 }
 
 export const pagesConfig = {

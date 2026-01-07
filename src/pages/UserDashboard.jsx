@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -696,7 +695,7 @@ export default function UserDashboard() {
 
       {/* Tabs */}
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
           {user?.node_owner && (
             <>
               <TabsTrigger value="node-owner">
@@ -710,6 +709,10 @@ export default function UserDashboard() {
               <TabsTrigger value="dcc-reports">
                 <FileText className="w-4 h-4 mr-2" />
                 {t("dccReports")}
+              </TabsTrigger>
+              <TabsTrigger value="tutorials">
+                <Activity className="w-4 h-4 mr-2" />
+                Tutorials
               </TabsTrigger>
               <TabsTrigger value="node-config"> {/* Moved inside node_owner check */}
                 <Settings className="w-4 h-4 mr-2" />
@@ -1230,6 +1233,48 @@ export default function UserDashboard() {
                   </div>
 
                   {/* Future months can be added here */}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
+        {/* Tutorials Tab */}
+        {user?.node_owner && (
+          <TabsContent value="tutorials" className="space-y-6">
+            <Card className="border-none shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Tutorials
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-gray-700 mb-6">
+                  Learn how to use DecentralScan and manage your node with these helpful video tutorials.
+                </p>
+
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Getting Started</h3>
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="aspect-video">
+                        <iframe
+                          src="https://player.vimeo.com/video/1152058019?h=36cbfb4f7f&title=0&byline=0&portrait=0"
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-semibold text-gray-900 mb-1">Introduction to DecentralScan</h4>
+                        <p className="text-sm text-gray-600">
+                          Learn the basics of navigating DecentralScan and exploring blockchain data.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
