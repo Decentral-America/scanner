@@ -79,6 +79,7 @@ function LayoutContent({ children }) {
     { title: t("peers"), url: createPageUrl("Peers"), icon: Network },
     { title: "Sustainability", url: createPageUrl("Sustainability"), icon: Leaf },
     { title: t("node"), url: createPageUrl("Node"), icon: Server },
+    { title: "Earnings Calculator", url: createPageUrl("NodeEarningsCalculator"), icon: Coins },
   ];
 
   // Fetch current user
