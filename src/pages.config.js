@@ -70,7 +70,6 @@ import TransactionMap from './pages/TransactionMap';
 import UnconfirmedTransactions from './pages/UnconfirmedTransactions';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
-import NodeEarningsCalculator from './pages/NodeEarningsCalculator';
 import __Layout from './Layout.jsx';
 
 
@@ -98,7 +97,6 @@ export const PAGES = {
     "UnconfirmedTransactions": UnconfirmedTransactions,
     "UserDashboard": UserDashboard,
     "UserProfile": UserProfile,
-    "NodeEarningsCalculator": NodeEarningsCalculator,
 }
 
 export const pagesConfig = {

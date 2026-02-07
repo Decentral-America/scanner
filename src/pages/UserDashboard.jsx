@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -41,6 +42,12 @@ import {
   ExternalLink, // Added ExternalLink icon
   RefreshCw, // Added RefreshCw icon for refresh button
   Receipt, // Added Receipt icon for transaction fees
+  Calculator,
+  PieChart,
+  Blocks,
+  RotateCcw,
+  Info,
+  Percent,
 } from "lucide-react";
 import {
   Dialog,
@@ -1349,20 +1356,8 @@ export default function UserDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Pending Development Notice */}
-                <Card className="border-none shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 mb-6">
-                  <CardContent className="p-8 text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className="p-4 bg-amber-200 rounded-full">
-                        <Clock className="w-12 h-12 text-amber-700" />
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">PENDING UPDATE RELEASE</h3>
-                    <p className="text-gray-700">
-                      The earnings calculator is still in development. Detailed earnings projections and ROI calculations will be available soon.
-                    </p>
-                  </CardContent>
-                </Card>
+                {/* Earnings Calculator */}
+                <NodeEarningsCalculator user={user} />
 
                 {/* Additional Revenue Sources */}
                 <Card className="border-none shadow-lg mt-6 bg-gradient-to-br from-indigo-50 to-purple-50">
