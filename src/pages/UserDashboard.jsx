@@ -1799,6 +1799,267 @@ export default function UserDashboard() {
   );
 }
 
+// Node Earnings Calculator Component
+function NodeEarningsCalculator({ user }) {
+  const [dccStaked, setDccStaked] = React.useState(user?.locked_dcc_tokens || 10000);
+  const [ownershipPercent, setOwnershipPercent] = React.useState(user?.node_ownership_percentage || 100);
+
+  // Constants (hard-coded)
+  const Tb = 60; // Block time in seconds
+  const Bd = 1440; // Blocks per day
+  const Rb = 1; // Block reward in DCC
+  const pi = 1.0; // Participation score (100% uptime)
+  const Seff = 500000; // Total effective stake
+
+  // Calculate results
+  const results = React.useMemo(() => {
+    if (Seff <= 0) {
+      return {
+        valid: false,
+        error: "Network stake unavailable",
+        stakeShare: 0,
+        expectedBlocksPerDay: 0,
+        earningsDay: 0,
+        earningsMonth: 0,
+        earningsYear: 0,
+        principal: 0,
+        apy: 0,
+      };
+    }
+
+    const Si = Math.max(0, Number(dccStaked) || 0);
+    const w = Math.max(0, Math.min(100, Number(ownershipPercent) || 0)) / 100;
+
+    const stakeShare = (Si * pi) / Seff;
+    const expectedBlocksPerDay = Bd * stakeShare;
+    const earningsDay = w * Bd * (Si * pi / Seff) * Rb;
+    const earningsMonth = earningsDay * 30;
+    const earningsYear = earningsDay * 365;
+    const principal = w * Si;
+    const apy = principal > 0 ? (earningsYear / principal) * 100 : 0;
+
+    return {
+      valid: true,
+      error: null,
+      stakeShare: stakeShare * 100,
+      expectedBlocksPerDay,
+      earningsDay,
+      earningsMonth,
+      earningsYear,
+      principal,
+      apy,
+    };
+  }, [dccStaked, ownershipPercent, Seff, Bd, Rb, pi]);
+
+  const handleReset = () => {
+    setDccStaked(user?.locked_dcc_tokens || 10000);
+    setOwnershipPercent(user?.node_ownership_percentage || 100);
+  };
+
+  const StatCard = ({ title, value, unit, icon: Icon, gradient }) => (
+    <Card className={`border-none shadow-lg ${gradient}`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-medium text-gray-700">{title}</p>
+          <div className="p-2 bg-white/50 rounded-lg">
+            <Icon className="w-4 h-4 text-gray-700" />
+          </div>
+        </div>
+        <p className="text-xl font-bold text-gray-900">
+          {typeof value === "number" ? value.toFixed(2) : value}
+          {unit && <span className="text-sm ml-1 text-gray-600">{unit}</span>}
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Calculator Card */}
+      <Card className="border-none shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="w-5 h-5" />
+            Calculator Inputs
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          {/* DCC Staked Input */}
+          <div className="space-y-2">
+            <Label htmlFor="dcc-staked" className="text-base font-semibold">
+              DCC Staked (Locked)
+            </Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="dcc-staked"
+                type="number"
+                min="0"
+                step="1000"
+                value={dccStaked}
+                onChange={(e) => setDccStaked(e.target.value === "" ? 0 : Number(e.target.value))}
+                className="text-lg"
+                placeholder="Enter DCC amount"
+              />
+              <Coins className="w-5 h-5 text-gray-400" />
+            </div>
+            <p className="text-sm text-gray-500">
+              Total amount of DCC tokens locked in the node
+            </p>
+          </div>
+
+          {/* Ownership Percentage */}
+          <div className="space-y-4">
+            <Label htmlFor="ownership" className="text-base font-semibold">
+              Ownership Percentage
+            </Label>
+            <div className="flex items-center gap-6">
+              <div className="flex-1">
+                <Slider
+                  id="ownership"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={[ownershipPercent]}
+                  onValueChange={(value) => setOwnershipPercent(value[0])}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-32">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={ownershipPercent}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const num = value === "" ? 0 : Number(value);
+                    setOwnershipPercent(Math.max(0, Math.min(100, num)));
+                  }}
+                  className="text-center"
+                />
+                <Percent className="w-5 h-5 text-gray-400" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">
+              Your ownership share of the node (0-100%)
+            </p>
+          </div>
+
+          {/* Reset Button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset to Your Settings
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Error Alert */}
+      {!results.valid && (
+        <Alert variant="destructive">
+          <Info className="w-4 h-4" />
+          <AlertDescription>{results.error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Results Grid */}
+      {results.valid && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              title="Stake Share"
+              value={results.stakeShare}
+              unit="%"
+              icon={PieChart}
+              gradient="bg-gradient-to-br from-blue-50 to-blue-100"
+            />
+            <StatCard
+              title="Est. Blocks/Day"
+              value={results.expectedBlocksPerDay}
+              icon={Blocks}
+              gradient="bg-gradient-to-br from-purple-50 to-purple-100"
+            />
+            <StatCard
+              title="Principal"
+              value={results.principal}
+              unit="DCC"
+              icon={Coins}
+              gradient="bg-gradient-to-br from-indigo-50 to-indigo-100"
+            />
+            <StatCard
+              title="APY (Simple)"
+              value={results.apy}
+              unit="%"
+              icon={TrendingUp}
+              gradient="bg-gradient-to-br from-green-50 to-green-100"
+            />
+          </div>
+
+          {/* Earnings Cards */}
+          <Card className="border-none shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Earnings Projections
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-5 h-5 text-orange-600" />
+                    <p className="text-sm font-semibold text-gray-700">Daily</p>
+                  </div>
+                  <p className="text-3xl font-bold text-orange-700">
+                    {results.earningsDay.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">DCC per day</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-5 h-5 text-yellow-600" />
+                    <p className="text-sm font-semibold text-gray-700">Monthly</p>
+                  </div>
+                  <p className="text-3xl font-bold text-yellow-700">
+                    {results.earningsMonth.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">DCC per month (30 days)</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    <p className="text-sm font-semibold text-gray-700">Yearly</p>
+                  </div>
+                  <p className="text-3xl font-bold text-green-700">
+                    {results.earningsYear.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">DCC per year (365 days)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Assumptions */}
+      <Alert className="bg-blue-50 border-blue-200">
+        <Info className="w-4 h-4 text-blue-600" />
+        <AlertDescription className="text-sm text-gray-700">
+          <strong>Assumptions:</strong> 1 DCC/block, 1 block/60s, S<sub>eff</sub>=500,000 DCC, uptime=100%, fees excluded.
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
+}
+
 // CR Coin Casino Profits Display Component
 function CasinoProfitsDisplay({ data, user, queryClient, t }) {
   const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];
