@@ -1,7 +1,33 @@
 {
   "name": "dccscan",
-  "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A modern, full-featured blockchain explorer for the DecentralChain (DCC) network. Explore blocks, transactions, addresses, assets, and network health in real time.",
+  "author": "DecentralScan Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dylanpersonguy/dccscan_new_frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dylanpersonguy/dccscan_new_frontend/issues"
+  },
+  "homepage": "https://github.com/dylanpersonguy/dccscan_new_frontend#readme",
+  "keywords": [
+    "blockchain",
+    "explorer",
+    "decentralchain",
+    "dcc",
+    "cryptocurrency",
+    "block-explorer",
+    "react",
+    "vite",
+    "tailwindcss",
+    "web3",
+    "defi",
+    "dex",
+    "node-management",
+    "network-monitor"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
