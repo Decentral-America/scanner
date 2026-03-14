@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getNodeApi } from '@/lib/api';
-import type { Transaction as TransactionType } from '@/types';
+import { fetchTransactionInfo, fetchUnconfirmedTransactionInfo } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
@@ -34,17 +33,13 @@ export default function Transaction() {
     queryFn: async () => {
       if (!txId) return null;
       try {
-        const confirmedTx = (await getNodeApi().transactions.fetchInfo(
-          txId,
-        )) as unknown as TransactionType;
+        const confirmedTx = await fetchTransactionInfo(txId);
         if (confirmedTx) return confirmedTx;
       } catch (err) {
         console.warn('Failed to fetch confirmed transaction:', err);
       }
       try {
-        const unconfirmedTx = (await getNodeApi().transactions.fetchUnconfirmedInfo(
-          txId,
-        )) as unknown as TransactionType;
+        const unconfirmedTx = await fetchUnconfirmedTransactionInfo(txId);
         if (unconfirmedTx) return unconfirmedTx;
       } catch (err) {
         console.warn('Failed to fetch unconfirmed transaction:', err);

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchAssetDetailsById, getNodeApi } from '@/lib/api';
+import { fetchAssetDetailsById, fetchBlockById, fetchTransactionInfo } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 
 export default function SearchBar(): React.ReactElement {
@@ -32,14 +32,14 @@ export default function SearchBar(): React.ReactElement {
       if (trimmedQuery.length >= 40) {
         // Try as block ID first
         try {
-          await getNodeApi().blocks.fetchBlockById(trimmedQuery);
+          await fetchBlockById(trimmedQuery);
           navigate(createPageUrl('BlockDetail', `?id=${trimmedQuery}`));
           setLoading(false);
           return;
         } catch (_blockError) {
           // Try as transaction ID
           try {
-            await getNodeApi().transactions.fetchInfo(trimmedQuery);
+            await fetchTransactionInfo(trimmedQuery);
             navigate(createPageUrl('Transaction', `?id=${trimmedQuery}`));
             setLoading(false);
             return;

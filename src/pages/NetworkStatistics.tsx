@@ -16,7 +16,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getNodeApi, type IBlockHeader, type INodeStatus, type INodeVersion } from '@/lib/api';
+import {
+  fetchBlockHeadersSeq,
+  fetchConnectedPeers,
+  fetchHeight,
+  fetchNodeStatus,
+  fetchNodeVersion,
+  type IBlockHeader,
+  type INodeStatus,
+  type INodeVersion,
+} from '@/lib/api';
 import type { PeersResponse } from '@/types';
 import { useLanguage } from '../components/contexts/LanguageContext';
 
@@ -25,22 +34,22 @@ export default function NetworkStatistics() {
 
   const { data: height } = useQuery<{ height: number }>({
     queryKey: ['height'],
-    queryFn: () => getNodeApi().blocks.fetchHeight(),
+    queryFn: () => fetchHeight(),
   });
 
   const { data: nodeStatus } = useQuery<INodeStatus>({
     queryKey: ['nodeStatus'],
-    queryFn: () => getNodeApi().node.fetchNodeStatus() as unknown as Promise<INodeStatus>,
+    queryFn: () => fetchNodeStatus(),
   });
 
   const { data: nodeVersion } = useQuery<INodeVersion>({
     queryKey: ['nodeVersion'],
-    queryFn: () => getNodeApi().node.fetchNodeVersion() as unknown as Promise<INodeVersion>,
+    queryFn: () => fetchNodeVersion(),
   });
 
   const { data: connectedPeers } = useQuery<PeersResponse>({
     queryKey: ['peers', 'connected'],
-    queryFn: () => getNodeApi().peers.fetchConnected() as unknown as Promise<PeersResponse>,
+    queryFn: () => fetchConnectedPeers(),
   });
 
   const currentHeight = height?.height || 0;
@@ -49,7 +58,7 @@ export default function NetworkStatistics() {
     queryKey: ['recentBlocks', currentHeight],
     queryFn: async () => {
       const from = Math.max(1, currentHeight - 99);
-      return getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
+      return fetchBlockHeadersSeq(from, currentHeight);
     },
     enabled: currentHeight > 0,
   });

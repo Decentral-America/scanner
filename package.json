@@ -53,7 +53,6 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "@decentralchain/data-service-client-js": "4.2.1",
     "@decentralchain/node-api-js": "2.0.1",
     "@decentralchain/ts-types": "2.0.1",
     "@radix-ui/react-dropdown-menu": "^2.1.16",

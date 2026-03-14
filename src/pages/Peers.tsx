@@ -14,7 +14,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getNodeApi } from '@/lib/api';
+import {
+  fetchAllPeers,
+  fetchBlacklistedPeers,
+  fetchConnectedPeers,
+  fetchSuspendedPeers,
+} from '@/lib/api';
 import type { NodeRegistrationRecord, Peer, PeersResponse } from '@/types';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import { fromUnix } from '../components/utils/formatters';
@@ -42,22 +47,22 @@ export default function Peers() {
 
   const { data: connected, isLoading: connectedLoading } = useQuery<PeersResponse>({
     queryKey: ['peers', 'connected'],
-    queryFn: () => getNodeApi().peers.fetchConnected() as unknown as Promise<PeersResponse>,
+    queryFn: () => fetchConnectedPeers(),
   });
 
   const { data: all, isLoading: allLoading } = useQuery<PeersResponse>({
     queryKey: ['peers', 'all'],
-    queryFn: () => getNodeApi().peers.fetchAll() as unknown as Promise<PeersResponse>,
+    queryFn: () => fetchAllPeers(),
   });
 
   const { data: suspended, isLoading: suspendedLoading } = useQuery<PeerApiShape>({
     queryKey: ['peers', 'suspended'],
-    queryFn: () => getNodeApi().peers.fetchSuspended() as unknown as Promise<PeerApiShape>,
+    queryFn: () => fetchSuspendedPeers(),
   });
 
   const { data: blacklisted, isLoading: blacklistedLoading } = useQuery<PeerApiShape>({
     queryKey: ['peers', 'blacklisted'],
-    queryFn: () => getNodeApi().peers.fetchBlackListed() as unknown as Promise<PeerApiShape>,
+    queryFn: () => fetchBlacklistedPeers(),
   });
 
   // Fetch node registrations

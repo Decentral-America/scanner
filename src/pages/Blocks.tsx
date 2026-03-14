@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getNodeApi } from '@/lib/api';
+import { fetchBlockHeadersSeq, fetchHeight } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
@@ -24,7 +24,7 @@ export default function Blocks() {
 
   const { data: height } = useQuery({
     queryKey: ['height'],
-    queryFn: () => getNodeApi().blocks.fetchHeight(),
+    queryFn: () => fetchHeight(),
   });
 
   const currentHeight = height?.height || 0;
@@ -35,7 +35,7 @@ export default function Blocks() {
 
   const { data: blocks, isLoading } = useQuery({
     queryKey: ['blockHeaders', fromHeight, toHeight],
-    queryFn: () => getNodeApi().blocks.fetchHeadersSeq(fromHeight, toHeight),
+    queryFn: () => fetchBlockHeadersSeq(fromHeight, toHeight),
     enabled: currentHeight > 0,
   });
 

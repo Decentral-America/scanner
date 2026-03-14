@@ -30,7 +30,7 @@ import {
   type FullDistribution,
   fetchAssetDetailsById,
   fetchFullAssetDistribution,
-  getNodeApi,
+  fetchHeight,
   type TAssetDetails,
 } from '@/lib/api';
 import type { SortConfig as BaseSortConfig } from '@/types';
@@ -101,7 +101,7 @@ export default function DistributionTool() {
 
   const { data: latestHeightData, isLoading: heightLoading } = useQuery({
     queryKey: ['height'],
-    queryFn: () => getNodeApi().blocks.fetchHeight(),
+    queryFn: () => fetchHeight(),
   });
   const latestHeight = latestHeightData?.height || 0;
 

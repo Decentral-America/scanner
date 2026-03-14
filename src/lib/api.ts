@@ -17,7 +17,7 @@ import type {
   INodeStatus as INodeStatusBase,
   INodeVersion,
 } from '@decentralchain/node-api-js/api-node/node';
-import type { Transaction, WithApiMixin } from '@decentralchain/ts-types';
+import type { Lease, PeersResponse, Transaction } from '@/types';
 
 /** Augmented node status – the real API returns extra fields the SDK omits. */
 export interface INodeStatus extends INodeStatusBase {
@@ -34,8 +34,6 @@ export type {
   TAssetBalance,
   TAssetDetails,
   TAssetsBalance,
-  Transaction,
-  WithApiMixin,
 };
 
 // ── Constants ──────────────────────────────────────────────────────────
@@ -45,20 +43,102 @@ const DATA_SERVICE_URL = 'https://data-service.decentralchain.io/v0';
 const DISTRIBUTION_PAGE_LIMIT = 1000;
 
 // ── SDK Instance ───────────────────────────────────────────────────────
-let nodeApi = create(DEFAULT_NODE_URL);
-
-export function setNodeUrl(url: string): void {
-  nodeApi = create(url || DEFAULT_NODE_URL);
-}
-
-export function getNodeApi() {
-  return nodeApi;
-}
+const nodeApi = create(DEFAULT_NODE_URL);
 
 /** Fetch details for a single asset (SDK takes string[]). */
 export async function fetchAssetDetailsById(assetId: string): Promise<TAssetDetails> {
   const results = await nodeApi.assets.fetchDetails([assetId]);
   return results[0] as TAssetDetails;
+}
+
+// ── Typed wrappers (absorb SDK ↔ scanner type mismatch) ───────────────
+
+// Blocks
+export async function fetchHeight(): Promise<{ height: number }> {
+  return nodeApi.blocks.fetchHeight() as Promise<{ height: number }>;
+}
+
+export async function fetchLastBlock(): Promise<IBlock> {
+  return nodeApi.blocks.fetchLast() as Promise<IBlock>;
+}
+
+export async function fetchBlockAt(height: number): Promise<IBlock> {
+  return nodeApi.blocks.fetchBlockAt(height) as Promise<IBlock>;
+}
+
+export async function fetchBlockById(id: string): Promise<IBlock> {
+  return nodeApi.blocks.fetchBlockById(id) as Promise<IBlock>;
+}
+
+export async function fetchBlockHeadersSeq(from: number, to: number): Promise<IBlock[]> {
+  return nodeApi.blocks.fetchHeadersSeq(from, to) as Promise<IBlock[]>;
+}
+
+// Transactions
+export async function fetchTransactionInfo(id: string): Promise<Transaction> {
+  return nodeApi.transactions.fetchInfo(id) as unknown as Promise<Transaction>;
+}
+
+export async function fetchUnconfirmedTransactionInfo(id: string): Promise<Transaction> {
+  return nodeApi.transactions.fetchUnconfirmedInfo(id) as unknown as Promise<Transaction>;
+}
+
+export async function fetchAddressTransactions(
+  address: string,
+  limit: number,
+): Promise<Transaction[][]> {
+  return nodeApi.transactions.fetchTransactions(address, limit) as unknown as Promise<
+    Transaction[][]
+  >;
+}
+
+export async function fetchUnconfirmedTransactions(): Promise<Transaction[]> {
+  return nodeApi.transactions.fetchUnconfirmed() as unknown as Promise<Transaction[]>;
+}
+
+// Assets
+export async function fetchAssetsBalance(address: string): Promise<TAssetsBalance> {
+  return nodeApi.assets.fetchAssetsBalance(address) as Promise<TAssetsBalance>;
+}
+
+export async function fetchAddressNFTs(address: string, limit: number): Promise<TAssetDetails[]> {
+  return nodeApi.assets.fetchAssetsAddressLimit(address, limit) as Promise<TAssetDetails[]>;
+}
+
+// Leasing
+export async function fetchActiveLeases(address: string): Promise<Lease[]> {
+  return nodeApi.leasing.fetchActive(address) as unknown as Promise<Lease[]>;
+}
+
+// Peers
+export async function fetchConnectedPeers(): Promise<PeersResponse> {
+  return nodeApi.peers.fetchConnected() as unknown as Promise<PeersResponse>;
+}
+
+export async function fetchAllPeers(): Promise<PeersResponse> {
+  return nodeApi.peers.fetchAll() as unknown as Promise<PeersResponse>;
+}
+
+export async function fetchSuspendedPeers(): Promise<PeersResponse> {
+  return nodeApi.peers.fetchSuspended() as unknown as Promise<PeersResponse>;
+}
+
+export async function fetchBlacklistedPeers(): Promise<PeersResponse> {
+  return nodeApi.peers.fetchBlackListed() as unknown as Promise<PeersResponse>;
+}
+
+// Node
+export async function fetchNodeStatus(): Promise<INodeStatus> {
+  return nodeApi.node.fetchNodeStatus() as unknown as Promise<INodeStatus>;
+}
+
+export async function fetchNodeVersion(): Promise<INodeVersion> {
+  return nodeApi.node.fetchNodeVersion() as unknown as Promise<INodeVersion>;
+}
+
+/** Extract typed transactions from a block response. */
+export function getBlockTransactions(block: IBlock): Transaction[] {
+  return block.transactions as unknown as Transaction[];
 }
 
 // ── Scanner-specific types (not in SDK) ────────────────────────────────
@@ -74,7 +154,7 @@ export interface FullDistribution {
   totalHolders: number;
 }
 
-export interface OrderbookMarket {
+interface OrderbookMarket {
   amountAsset: string;
   priceAsset: string;
 }
@@ -83,7 +163,7 @@ export interface OrderbookResponse {
   markets: OrderbookMarket[];
 }
 
-export interface PairInfoResponse {
+interface PairInfoResponse {
   __type?: string;
   data: {
     firstPrice: number;
@@ -113,21 +193,8 @@ export interface DexPairData {
   txsCount: number;
 }
 
-export interface Peer {
-  address: string;
-  declaredAddress?: string;
-  peerName?: string;
-  peerNonce?: number;
-  applicationName?: string;
-  applicationVersion?: string;
-}
-
-export interface PeersResponse {
-  peers: Peer[];
-}
-
 // ── Asset distribution (SDK lacks `after` cursor) ──────────────────────
-export async function fetchAssetDistribution(
+async function fetchAssetDistribution(
   assetId: string,
   height: number,
   limit: number = DISTRIBUTION_PAGE_LIMIT,

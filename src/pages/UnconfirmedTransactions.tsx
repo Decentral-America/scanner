@@ -17,8 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getNodeApi } from '@/lib/api';
-import type { Transaction } from '@/types';
+import { fetchUnconfirmedTransactions } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
@@ -35,10 +34,7 @@ export default function UnconfirmedTransactions() {
     error,
   } = useQuery({
     queryKey: ['unconfirmedTransactions'],
-    queryFn: async () => {
-      const result = await getNodeApi().transactions.fetchUnconfirmed();
-      return result as unknown as Transaction[];
-    },
+    queryFn: () => fetchUnconfirmedTransactions(),
     refetchInterval: autoRefresh ? 5000 : false,
   });
 

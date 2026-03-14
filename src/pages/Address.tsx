@@ -23,7 +23,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getNodeApi, type TAssetDetails, type TAssetsBalance } from '@/lib/api';
+import {
+  fetchActiveLeases,
+  fetchAddressNFTs,
+  fetchAddressTransactions,
+  fetchAssetsBalance,
+  type TAssetDetails,
+  type TAssetsBalance,
+} from '@/lib/api';
 import type { Lease, Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
@@ -50,32 +57,25 @@ export default function Address() {
 
   const { data: balances, isLoading: balancesLoading } = useQuery<TAssetsBalance>({
     queryKey: ['balances', address],
-    queryFn: () =>
-      getNodeApi().assets.fetchAssetsBalance(address) as unknown as Promise<TAssetsBalance>,
+    queryFn: () => fetchAssetsBalance(address),
     enabled: !!address,
   });
 
   const { data: transactions, isLoading: txLoading } = useQuery<Transaction[][]>({
     queryKey: ['transactions', address],
-    queryFn: () =>
-      getNodeApi().transactions.fetchTransactions(address, 50) as unknown as Promise<
-        Transaction[][]
-      >,
+    queryFn: () => fetchAddressTransactions(address, 50),
     enabled: !!address,
   });
 
   const { data: nfts, isLoading: nftsLoading } = useQuery<TAssetDetails[]>({
     queryKey: ['nfts', address],
-    queryFn: () =>
-      getNodeApi().assets.fetchAssetsAddressLimit(address, 100) as unknown as Promise<
-        TAssetDetails[]
-      >,
+    queryFn: () => fetchAddressNFTs(address, 100),
     enabled: !!address,
   });
 
   const { data: leases, isLoading: leasesLoading } = useQuery<Lease[]>({
     queryKey: ['leases', address],
-    queryFn: () => getNodeApi().leasing.fetchActive(address) as unknown as Promise<Lease[]>,
+    queryFn: () => fetchActiveLeases(address),
     enabled: !!address,
   });
 

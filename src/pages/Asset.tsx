@@ -22,11 +22,14 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   fetchAssetDetailsById,
-  getNodeApi,
+  fetchBlockAt,
+  fetchBlockHeadersSeq,
+  fetchHeight,
+  getBlockTransactions,
   type IBlockHeader,
   type TAssetDetails,
 } from '@/lib/api';
-import type { TokenAssetStat, Transaction } from '@/types';
+import type { TokenAssetStat } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import AssetLogo from '../components/shared/AssetLogo';
@@ -245,7 +248,7 @@ function AssetActivityWidget() {
 
   const { data: height } = useQuery({
     queryKey: ['height'],
-    queryFn: () => getNodeApi().blocks.fetchHeight(),
+    queryFn: () => fetchHeight(),
   });
 
   const currentHeight = height?.height || 0;
@@ -258,7 +261,7 @@ function AssetActivityWidget() {
       try {
         // Fetch last 50 blocks
         const from = Math.max(1, currentHeight - 49);
-        const blockHeaders = await getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
+        const blockHeaders = await fetchBlockHeadersSeq(from, currentHeight);
 
         // Track asset activity
         const assetStats: Record<string, TokenAssetStat> = {};
@@ -271,10 +274,10 @@ function AssetActivityWidget() {
             // Add delay between requests to avoid overwhelming the API
             await new Promise((resolve) => setTimeout(resolve, 200));
 
-            const fullBlock = await getNodeApi().blocks.fetchBlockAt(block.height);
+            const fullBlock = await fetchBlockAt(block.height);
             if (fullBlock?.transactions) {
               successfulBlocks++;
-              for (const tx of fullBlock.transactions as unknown as Transaction[]) {
+              for (const tx of getBlockTransactions(fullBlock)) {
                 totalTxCount++;
 
                 // Track asset transfers

@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getNodeApi } from '@/lib/api';
+import { fetchBlockHeadersSeq, fetchNodeVersion } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   const { data: nodeVersion } = useQuery({
     queryKey: ['nodeVersion'],
-    queryFn: () => getNodeApi().node.fetchNodeVersion(),
+    queryFn: () => fetchNodeVersion(),
   });
 
   const currentHeight = height?.height || 0;
@@ -42,7 +42,7 @@ export default function Dashboard() {
     queryKey: ['blockHeaders', currentHeight],
     queryFn: async () => {
       const from = Math.max(1, currentHeight - 49);
-      return getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
+      return fetchBlockHeadersSeq(from, currentHeight);
     },
     enabled: currentHeight > 0,
     refetchInterval: autoRefresh ? 15000 : false,

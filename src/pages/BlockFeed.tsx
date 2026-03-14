@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getNodeApi, type IBlock } from '@/lib/api';
+import { fetchBlockAt, fetchBlockHeadersSeq, type IBlock } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext'; // Added import
 import CopyButton from '../components/shared/CopyButton';
@@ -40,13 +40,10 @@ export default function BlockFeed() {
       // Safety check
       if (to - from > MAX_BLOCKS_PER_REQUEST) {
         console.warn(`Block range too large: ${from}-${to}, limiting to ${MAX_BLOCKS_PER_REQUEST}`);
-        return getNodeApi().blocks.fetchHeadersSeq(
-          to - MAX_BLOCKS_PER_REQUEST + 1,
-          to,
-        ) as unknown as IBlock[];
+        return fetchBlockHeadersSeq(to - MAX_BLOCKS_PER_REQUEST + 1, to);
       }
 
-      return getNodeApi().blocks.fetchHeadersSeq(from, to) as unknown as IBlock[];
+      return fetchBlockHeadersSeq(from, to);
     },
     enabled: !!currentHeight?.height && blocks.length === 0,
   });
@@ -74,7 +71,7 @@ export default function BlockFeed() {
 
       if (gap === 1) {
         // Just one new block
-        setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
+        setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
         lastHeightRef.current = newHeight;
       } else if (gap > 1 && gap <= MAX_GAP_TO_FETCH) {
         // Multiple new blocks - fetch them all (but only if gap is reasonable)
@@ -83,16 +80,13 @@ export default function BlockFeed() {
             const from = lastHeightRef.current + 1;
             const to = newHeight;
 
-            const missing = (await getNodeApi().blocks.fetchHeadersSeq(
-              from,
-              to,
-            )) as unknown as IBlock[];
+            const missing = await fetchBlockHeadersSeq(from, to);
             const sorted = [...missing].sort((a, b) => b.height - a.height);
             setBlocks((prev) => [...sorted, ...prev.slice(0, 50 - sorted.length)]);
             lastHeightRef.current = newHeight;
           } catch (error) {
             console.error(`Failed to fetch missing blocks:`, error);
-            setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
+            setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
             lastHeightRef.current = newHeight;
           }
         };
@@ -100,7 +94,7 @@ export default function BlockFeed() {
       } else if (gap > MAX_GAP_TO_FETCH) {
         // Gap too large, just add the new block and update reference
         console.warn(`Gap too large (${gap} blocks), skipping missing blocks`);
-        setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
+        setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
         lastHeightRef.current = newHeight;
       }
     }
@@ -248,7 +242,7 @@ function TransactionList({ blockHeight }: { blockHeight: number }): ReactElement
   const { t } = useLanguage(); // Added useLanguage hook
   const { data: block, isLoading } = useQuery<IBlock>({
     queryKey: ['blockTxs', blockHeight],
-    queryFn: () => getNodeApi().blocks.fetchBlockAt(blockHeight) as unknown as Promise<IBlock>,
+    queryFn: () => fetchBlockAt(blockHeight),
   });
 
   if (isLoading) {

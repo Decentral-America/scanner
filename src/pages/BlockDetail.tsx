@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getNodeApi } from '@/lib/api';
+import { fetchBlockAt, fetchBlockById } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import CopyButton from '../components/shared/CopyButton';
 import { fromUnix, truncate } from '../components/utils/formatters';
@@ -24,9 +24,9 @@ export default function BlockDetail() {
     queryKey: ['block', height, id],
     queryFn: async () => {
       if (height) {
-        return getNodeApi().blocks.fetchBlockAt(parseInt(height, 10));
+        return fetchBlockAt(parseInt(height, 10));
       } else if (id) {
-        return getNodeApi().blocks.fetchBlockById(id);
+        return fetchBlockById(id);
       }
       throw new Error('No block identifier provided');
     },
