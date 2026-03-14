@@ -1,5 +1,8 @@
+import type { Core, EventObject } from 'cytoscape';
+import cytoscape from 'cytoscape';
+import fcose from 'cytoscape-fcose';
 import { AlertCircle, Info, Loader2, Network, PlayCircle, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { fetchAddressTransactions } from '@/lib/api';
 import { useLanguage } from '../components/contexts/LanguageContext';
+
+// Register fcose layout once
+cytoscape.use(fcose);
 
 interface TransactionMapFormState {
   assetId: string;
@@ -55,34 +61,6 @@ interface TransactionMapGraphState {
   hopsBuilt: number;
 }
 
-interface CytoscapeNode {
-  data(key: 'id'): string;
-  data(): { id: string; label: string; weight: number };
-}
-
-interface CytoscapeEdge {
-  data(): { id: string; source: string; target: string; amount: number; ts: number; txid: string };
-}
-
-interface CytoscapeEvent {
-  target: CytoscapeNode | CytoscapeEdge;
-}
-
-interface CytoscapeInstance {
-  destroy(): void;
-  on(eventName: string, selector: string, handler: (event: CytoscapeEvent) => void): void;
-}
-
-interface WindowWithCytoscape extends Window {
-  cytoscape?: (options: {
-    container: HTMLElement;
-    elements: Array<{ data: Record<string, string | number> }>;
-    style: Array<{ selector: string; style: Record<string, string | number> }>;
-    layout: Record<string, string | number | boolean>;
-  }) => CytoscapeInstance;
-  cytoscapeFcose?: unknown;
-}
-
 export default function TransactionMap() {
   const { t } = useLanguage();
   const [form, setForm] = useState<TransactionMapFormState>({
@@ -105,34 +83,13 @@ export default function TransactionMap() {
     hopsBuilt: 0,
   });
 
-  const cyRef = useRef<CytoscapeInstance | null>(null);
+  const cyRef = useRef<Core | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const visitedRef = useRef<{ addresses: Set<string>; txIds: Set<string> }>({
     addresses: new Set<string>(),
     txIds: new Set<string>(),
   });
   const rawCacheRef = useRef<Record<string, unknown>>({});
-  const browserWindow = window as WindowWithCytoscape;
-
-  // Load Cytoscape.js on mount
-  useEffect(() => {
-    if (!browserWindow.cytoscape) {
-      const script1 = document.createElement('script');
-      script1.src = 'https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js';
-      script1.async = true;
-      document.body.appendChild(script1);
-
-      const script2 = document.createElement('script');
-      script2.src = 'https://unpkg.com/cytoscape-fcose@2.2.0/cytoscape-fcose.js';
-      script2.async = true;
-      document.body.appendChild(script2);
-
-      return () => {
-        document.body.removeChild(script1);
-        document.body.removeChild(script2);
-      };
-    }
-  }, []);
 
   // Helper to check if address is valid (not an alias)
   const isValidAddress = (addr: string | null | undefined): addr is string => {
@@ -371,8 +328,7 @@ export default function TransactionMap() {
 
   const renderGraph = (graphData: TransactionMapGraphState): void => {
     const container = containerRef.current;
-    if (!container || !browserWindow.cytoscape) {
-      console.warn(t('cytoscapeNotLoaded'));
+    if (!container) {
       return;
     }
 
@@ -396,7 +352,7 @@ export default function TransactionMap() {
     }));
 
     try {
-      cyRef.current = browserWindow.cytoscape({
+      cyRef.current = cytoscape({
         container,
         elements: [...nodes, ...edges],
         style: [
@@ -404,7 +360,7 @@ export default function TransactionMap() {
             selector: 'node',
             style: {
               label: 'data(label)',
-              'font-size': '10px',
+              'font-size': 10,
               'text-valign': 'center',
               'text-halign': 'center',
               'background-color': '#3b82f6',
@@ -433,16 +389,16 @@ export default function TransactionMap() {
           },
         ],
         layout: {
-          name: browserWindow.cytoscapeFcose ? 'fcose' : 'cose',
+          name: 'fcose',
           quality: 'proof',
           randomize: true,
           packComponents: true,
           nodeSeparation: 100,
-        },
+        } as cytoscape.LayoutOptions,
       });
 
       // Click handlers
-      cyRef.current.on('tap', 'edge', (evt: CytoscapeEvent) => {
+      cyRef.current.on('tap', 'edge', (evt: EventObject) => {
         const d = evt.target.data() as {
           txid: string;
           amount: number;
@@ -453,8 +409,8 @@ export default function TransactionMap() {
         alert(`${t('txIdCopied')}\n\n${info}`);
       });
 
-      cyRef.current.on('tap', 'node', (evt: CytoscapeEvent) => {
-        const id = String((evt.target as CytoscapeNode).data('id'));
+      cyRef.current.on('tap', 'node', (evt: EventObject) => {
+        const id = String(evt.target.data('id'));
         navigator.clipboard.writeText(id);
         alert(`${t('addressCopied')}: ${id}`);
       });
