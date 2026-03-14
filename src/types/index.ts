@@ -1,44 +1,4 @@
-// ─── Block ───────────────────────────────────────────────────────
-
-export interface Block {
-  height: number;
-  signature: string;
-  timestamp: number;
-  generator: string;
-  transactionCount: number;
-  reward?: number;
-  blocksize?: number;
-  version?: number;
-  reference?: string;
-  nxt_consensus?: {
-    'base-target': number;
-    'generation-signature': string;
-  };
-  features?: number[];
-  desiredReward?: number;
-  totalFee?: number;
-  transactions?: Transaction[];
-  [key: string]: unknown;
-}
-
-export interface BlockHeader {
-  height: number;
-  signature: string;
-  timestamp: number;
-  generator: string;
-  transactionCount: number;
-  blocksize?: number;
-  reward?: number;
-  totalFee?: number;
-  [key: string]: unknown;
-}
-
 // ─── Transaction ─────────────────────────────────────────────────
-
-export interface MassTransferItem {
-  recipient: string;
-  amount: number;
-}
 
 export interface Transaction {
   id: string;
@@ -55,7 +15,7 @@ export interface Transaction {
   assetId?: string | null;
   attachment?: string;
   proofs?: string[];
-  transfers?: MassTransferItem[];
+  transfers?: Array<{ recipient: string; amount: number }>;
   name?: string;
   description?: string;
   quantity?: number;
@@ -70,50 +30,6 @@ export interface Transaction {
   };
   payment?: Array<{ amount: number; assetId: string | null }>;
   data?: Array<{ key: string; type: string; value: unknown }>;
-  [key: string]: unknown;
-}
-
-// ─── Asset ───────────────────────────────────────────────────────
-
-export interface AssetDetails {
-  assetId: string;
-  name: string;
-  description: string;
-  decimals: number;
-  quantity: number;
-  reissuable: boolean;
-  issuer: string;
-  issueHeight?: number;
-  issueTimestamp?: number;
-  scripted?: boolean;
-  minSponsoredAssetFee?: number | null;
-  originTransactionId?: string;
-  [key: string]: unknown;
-}
-
-export interface AssetBalance {
-  assetId: string;
-  balance: number;
-  issueTransaction?: {
-    name?: string;
-    decimals?: number;
-    description?: string;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
-
-export interface AddressBalances {
-  address: string;
-  balances: AssetBalance[];
-}
-
-export interface NFT {
-  assetId: string;
-  name?: string;
-  description?: string;
-  decimals?: number;
-  issuer?: string;
   [key: string]: unknown;
 }
 
@@ -145,116 +61,6 @@ export interface Peer {
 
 export interface PeersResponse {
   peers: Peer[];
-}
-
-export interface GeolocatedPeer extends Peer {
-  lat: number;
-  lng: number;
-  city: string;
-  country?: string;
-}
-
-// ─── Node ────────────────────────────────────────────────────────
-
-export interface HeightResponse {
-  height: number;
-}
-
-export interface NodeVersionResponse {
-  version: string;
-}
-
-export interface NodeStatusResponse {
-  blockchainHeight: number;
-  stateHeight: number;
-  updatedTimestamp: number;
-  updatedDate: string;
-  blockGeneratorStatus?: string;
-  historyReplierEnabled?: boolean;
-}
-
-// ─── Rewards ─────────────────────────────────────────────────────
-
-export interface RewardsResponse {
-  currentReward: number;
-  height: number;
-  totalWavesAmount?: number;
-  [key: string]: unknown;
-}
-
-// ─── DEX ─────────────────────────────────────────────────────────
-
-export interface OrderbookMarket {
-  amountAsset: string;
-  priceAsset: string;
-  amountAssetName?: string;
-  priceAssetName?: string;
-}
-
-export interface OrderbookResponse {
-  markets: OrderbookMarket[];
-}
-
-export interface PairInfoResponse {
-  data: {
-    lastPrice: number;
-    firstPrice: number;
-    volume: number;
-    quoteVolume?: number;
-    high: number;
-    low: number;
-    txsCount: number;
-    weightedAveragePrice?: number;
-  } | null;
-}
-
-export interface DexPairData {
-  amountAsset: string;
-  priceAsset: string;
-  amountAssetName: string;
-  priceAssetName: string;
-  pairName: string;
-  lastPrice: number;
-  volume: number;
-  change24h: number;
-  high: number;
-  low: number;
-  txsCount: number;
-}
-
-// ─── Distribution ────────────────────────────────────────────────
-
-export interface DistributionPage {
-  hasNext: boolean;
-  lastAddress: string | null;
-  items: Record<string, string>;
-}
-
-export interface FullDistribution {
-  items: Record<string, string>;
-  totalPages: number;
-  totalHolders: number;
-}
-
-export interface ProcessedHolder {
-  rank: number;
-  address: string;
-  balance: bigint;
-  percentage: number;
-  cumulative: number;
-}
-
-export interface DistributionStats {
-  holderCount: number;
-  top10Ownership: number;
-  tierCounts: Record<'WHALE' | 'SHARK' | 'DOLPHIN' | 'SHRIMP', number>;
-  gini: number;
-}
-
-export interface FetchProgress {
-  pages: number;
-  holders: number;
-  hasMore: boolean;
 }
 
 // ─── Entity Storage ──────────────────────────────────────────────

@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { getNodeApi } from '@/lib/api';
 import { useLanguage } from '../components/contexts/LanguageContext';
-import { blockchainAPI } from '../components/utils/blockchain';
 
 interface TransactionMapFormState {
   assetId: string;
@@ -319,7 +319,7 @@ export default function TransactionMap() {
         let res = rawCacheRef.current[addr];
         if (!res) {
           try {
-            res = await blockchainAPI.getAddressTransactions(addr, perAddressLimit);
+            res = await getNodeApi().transactions.fetchTransactions(addr, perAddressLimit);
             rawCacheRef.current[addr] = res;
           } catch (error: unknown) {
             console.warn(

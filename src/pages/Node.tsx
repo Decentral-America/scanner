@@ -4,20 +4,20 @@ import { Activity, Database, Server, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getNodeApi, type INodeStatus, type INodeVersion } from '@/lib/api';
 import { useLanguage } from '../components/contexts/LanguageContext';
-import { blockchainAPI } from '../components/utils/blockchain'; // Updated import path
 
 export default function Node() {
   const { t } = useLanguage();
 
-  const { data: status, isLoading: statusLoading } = useQuery({
+  const { data: status, isLoading: statusLoading } = useQuery<INodeStatus>({
     queryKey: ['nodeStatus'],
-    queryFn: () => blockchainAPI.getNodeStatus(),
+    queryFn: () => getNodeApi().node.fetchNodeStatus() as unknown as Promise<INodeStatus>,
   });
 
-  const { data: version, isLoading: versionLoading } = useQuery({
+  const { data: version, isLoading: versionLoading } = useQuery<INodeVersion>({
     queryKey: ['nodeVersion'],
-    queryFn: () => blockchainAPI.getNodeVersion(),
+    queryFn: () => getNodeApi().node.fetchNodeVersion() as unknown as Promise<INodeVersion>,
   });
 
   const InfoCard = ({

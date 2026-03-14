@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { blockchainAPI } from '@/components/utils/blockchain';
+import { fetchAssetDetailsById, getNodeApi } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 
 export default function SearchBar(): React.ReactElement {
@@ -32,21 +32,21 @@ export default function SearchBar(): React.ReactElement {
       if (trimmedQuery.length >= 40) {
         // Try as block ID first
         try {
-          await blockchainAPI.getBlockById(trimmedQuery);
+          await getNodeApi().blocks.fetchBlockById(trimmedQuery);
           navigate(createPageUrl('BlockDetail', `?id=${trimmedQuery}`));
           setLoading(false);
           return;
         } catch (_blockError) {
           // Try as transaction ID
           try {
-            await blockchainAPI.getTransaction(trimmedQuery);
+            await getNodeApi().transactions.fetchInfo(trimmedQuery);
             navigate(createPageUrl('Transaction', `?id=${trimmedQuery}`));
             setLoading(false);
             return;
           } catch (_txError) {
             // Try as asset ID
             try {
-              await blockchainAPI.getAssetDetails(trimmedQuery);
+              await fetchAssetDetailsById(trimmedQuery);
               navigate(createPageUrl('Asset', `?id=${trimmedQuery}`));
               setLoading(false);
               return;

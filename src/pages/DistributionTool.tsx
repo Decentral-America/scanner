@@ -26,12 +26,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { AssetDetails, SortConfig as BaseSortConfig, FullDistribution } from '@/types';
+import {
+  type FullDistribution,
+  fetchAssetDetailsById,
+  fetchFullAssetDistribution,
+  getNodeApi,
+  type TAssetDetails,
+} from '@/lib/api';
+import type { SortConfig as BaseSortConfig } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import AssetLogo from '../components/shared/AssetLogo';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
+
 import { formatAmount, truncate } from '../components/utils/formatters';
 
 // Holder Tiers with emojis
@@ -94,7 +101,7 @@ export default function DistributionTool() {
 
   const { data: latestHeightData, isLoading: heightLoading } = useQuery({
     queryKey: ['height'],
-    queryFn: () => blockchainAPI.getHeight(),
+    queryFn: () => getNodeApi().blocks.fetchHeight(),
   });
   const latestHeight = latestHeightData?.height || 0;
 
@@ -102,9 +109,9 @@ export default function DistributionTool() {
     data: assetData,
     isLoading: assetLoading,
     error: assetError,
-  } = useQuery<AssetDetails>({
+  } = useQuery<TAssetDetails>({
     queryKey: ['asset', submittedAssetId],
-    queryFn: () => blockchainAPI.getAssetDetails(submittedAssetId as string),
+    queryFn: () => fetchAssetDetailsById(submittedAssetId as string),
     enabled: !!submittedAssetId,
   });
 
@@ -115,7 +122,7 @@ export default function DistributionTool() {
   } = useQuery<FullDistribution>({
     queryKey: ['distribution', submittedAssetId, submittedHeight],
     queryFn: () =>
-      blockchainAPI.getFullAssetDistribution(
+      fetchFullAssetDistribution(
         submittedAssetId as string,
         submittedHeight as number,
         (pages, holders, hasMore) => {
@@ -464,7 +471,7 @@ export default function DistributionTool() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">
-                  {formatAmount(assetData.quantity, assetData.decimals)}
+                  {formatAmount(Number(assetData.quantity), Number(assetData.decimals))}
                 </p>
                 <p className="text-sm text-gray-500">
                   {t('snapshotAt').replace('{height}', String(submittedHeight))}

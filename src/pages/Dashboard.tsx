@@ -16,10 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getNodeApi } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { formatAmount, fromUnix, timeAgo, truncate } from '../components/utils/formatters';
 import { useBlockHeight, useLatestBlock } from '../hooks/useBlockPolling';
 
@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   const { data: nodeVersion } = useQuery({
     queryKey: ['nodeVersion'],
-    queryFn: () => blockchainAPI.getNodeVersion(),
+    queryFn: () => getNodeApi().node.fetchNodeVersion(),
   });
 
   const currentHeight = height?.height || 0;
@@ -42,7 +42,7 @@ export default function Dashboard() {
     queryKey: ['blockHeaders', currentHeight],
     queryFn: async () => {
       const from = Math.max(1, currentHeight - 49);
-      return blockchainAPI.getBlockHeaders(from, currentHeight);
+      return getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
     },
     enabled: currentHeight > 0,
     refetchInterval: autoRefresh ? 15000 : false,
@@ -162,7 +162,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">{t('reward')}</p>
-                <p className="font-semibold">{formatAmount(lastBlock.reward || 0)} DC</p>
+                <p className="font-semibold">{formatAmount(Number(lastBlock.reward || 0))} DC</p>
               </div>
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-500 mb-1">{t('generator')}</p>

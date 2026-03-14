@@ -17,10 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getNodeApi } from '@/lib/api';
+import type { Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { formatAmount, timeAgo, truncate } from '../components/utils/formatters';
 
 export default function UnconfirmedTransactions() {
@@ -34,7 +35,10 @@ export default function UnconfirmedTransactions() {
     error,
   } = useQuery({
     queryKey: ['unconfirmedTransactions'],
-    queryFn: () => blockchainAPI.getUnconfirmedTransactions(),
+    queryFn: async () => {
+      const result = await getNodeApi().transactions.fetchUnconfirmed();
+      return result as unknown as Transaction[];
+    },
     refetchInterval: autoRefresh ? 5000 : false,
   });
 

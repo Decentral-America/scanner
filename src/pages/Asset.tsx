@@ -20,12 +20,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { AssetDetails, BlockHeader, TokenAssetStat, Transaction } from '@/types';
+import {
+  fetchAssetDetailsById,
+  getNodeApi,
+  type IBlockHeader,
+  type TAssetDetails,
+} from '@/lib/api';
+import type { TokenAssetStat, Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import AssetLogo from '../components/shared/AssetLogo';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
+
 import { formatAmount, truncate } from '../components/utils/formatters';
 
 const COLORS = [
@@ -54,7 +60,7 @@ export default function Asset() {
     error,
   } = useQuery({
     queryKey: ['asset', assetId],
-    queryFn: () => blockchainAPI.getAssetDetails(assetId),
+    queryFn: () => fetchAssetDetailsById(assetId),
     enabled: !!assetId,
   });
 
@@ -163,7 +169,7 @@ export default function Asset() {
                     <div>
                       <p className="text-sm text-gray-500 mb-2">{t('totalQuantity')}</p>
                       <p className="font-semibold">
-                        {formatAmount(asset.quantity, asset.decimals)}
+                        {formatAmount(Number(asset.quantity), Number(asset.decimals))}
                       </p>
                     </div>
                     <div>
@@ -239,7 +245,7 @@ function AssetActivityWidget() {
 
   const { data: height } = useQuery({
     queryKey: ['height'],
-    queryFn: () => blockchainAPI.getHeight(),
+    queryFn: () => getNodeApi().blocks.fetchHeight(),
   });
 
   const currentHeight = height?.height || 0;
@@ -252,7 +258,7 @@ function AssetActivityWidget() {
       try {
         // Fetch last 50 blocks
         const from = Math.max(1, currentHeight - 49);
-        const blockHeaders = await blockchainAPI.getBlockHeaders(from, currentHeight);
+        const blockHeaders = await getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
 
         // Track asset activity
         const assetStats: Record<string, TokenAssetStat> = {};
@@ -260,15 +266,15 @@ function AssetActivityWidget() {
         let successfulBlocks = 0;
 
         // REDUCED: Fetch transactions from only last 8 blocks (instead of 15)
-        for (const block of (blockHeaders as BlockHeader[]).slice(-8)) {
+        for (const block of (blockHeaders as IBlockHeader[]).slice(-8)) {
           try {
             // Add delay between requests to avoid overwhelming the API
             await new Promise((resolve) => setTimeout(resolve, 200));
 
-            const fullBlock = await blockchainAPI.getBlockByHeight(block.height);
+            const fullBlock = await getNodeApi().blocks.fetchBlockAt(block.height);
             if (fullBlock?.transactions) {
               successfulBlocks++;
-              for (const tx of fullBlock.transactions as Transaction[]) {
+              for (const tx of fullBlock.transactions as unknown as Transaction[]) {
                 totalTxCount++;
 
                 // Track asset transfers
@@ -316,7 +322,7 @@ function AssetActivityWidget() {
         for (const asset of topAssets) {
           try {
             await new Promise((resolve) => setTimeout(resolve, 150));
-            const details = (await blockchainAPI.getAssetDetails(asset.assetId)) as AssetDetails;
+            const details = (await fetchAssetDetailsById(asset.assetId)) as TAssetDetails;
             asset.name = details.name || 'Unknown';
             asset.decimals = details.decimals || 8;
           } catch (err: unknown) {

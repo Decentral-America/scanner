@@ -7,11 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Block } from '@/types';
+import { getNodeApi, type IBlock } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext'; // Added import
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { fromUnix, timeAgo, truncate } from '../components/utils/formatters';
 import { useBlockHeight, useLatestBlock } from '../hooks/useBlockPolling';
 
@@ -22,7 +21,7 @@ const MAX_GAP_TO_FETCH = 50; // Don't try to fetch more than 50 blocks at once w
 export default function BlockFeed() {
   const { t } = useLanguage(); // Added useLanguage hook
   const [paused, setPaused] = useState<boolean>(false);
-  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [blocks, setBlocks] = useState<IBlock[]>([]);
   const [expandedBlocks, setExpandedBlocks] = useState<Set<number>>(new Set<number>());
   const lastHeightRef = useRef<number>(0);
 
@@ -31,7 +30,7 @@ export default function BlockFeed() {
   const { data: lastBlock } = useLatestBlock(!paused);
 
   // Initial load - fetch last 20 blocks
-  const { data: initialBlocks, isLoading } = useQuery<Block[] | null>({
+  const { data: initialBlocks, isLoading } = useQuery<IBlock[] | null>({
     queryKey: ['initialBlocks', currentHeight?.height],
     queryFn: async () => {
       if (!currentHeight?.height) return null;
@@ -41,10 +40,13 @@ export default function BlockFeed() {
       // Safety check
       if (to - from > MAX_BLOCKS_PER_REQUEST) {
         console.warn(`Block range too large: ${from}-${to}, limiting to ${MAX_BLOCKS_PER_REQUEST}`);
-        return blockchainAPI.getBlockHeaders(to - MAX_BLOCKS_PER_REQUEST + 1, to);
+        return getNodeApi().blocks.fetchHeadersSeq(
+          to - MAX_BLOCKS_PER_REQUEST + 1,
+          to,
+        ) as unknown as IBlock[];
       }
 
-      return blockchainAPI.getBlockHeaders(from, to) as Promise<Block[]>;
+      return getNodeApi().blocks.fetchHeadersSeq(from, to) as unknown as IBlock[];
     },
     enabled: !!currentHeight?.height && blocks.length === 0,
   });
@@ -72,7 +74,7 @@ export default function BlockFeed() {
 
       if (gap === 1) {
         // Just one new block
-        setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
+        setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
         lastHeightRef.current = newHeight;
       } else if (gap > 1 && gap <= MAX_GAP_TO_FETCH) {
         // Multiple new blocks - fetch them all (but only if gap is reasonable)
@@ -81,14 +83,16 @@ export default function BlockFeed() {
             const from = lastHeightRef.current + 1;
             const to = newHeight;
 
-            const missing = (await blockchainAPI.getBlockHeaders(from, to)) as Block[];
+            const missing = (await getNodeApi().blocks.fetchHeadersSeq(
+              from,
+              to,
+            )) as unknown as IBlock[];
             const sorted = [...missing].sort((a, b) => b.height - a.height);
             setBlocks((prev) => [...sorted, ...prev.slice(0, 50 - sorted.length)]);
             lastHeightRef.current = newHeight;
           } catch (error) {
             console.error(`Failed to fetch missing blocks:`, error);
-            // Fallback: just add the last block
-            setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
+            setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
             lastHeightRef.current = newHeight;
           }
         };
@@ -96,7 +100,7 @@ export default function BlockFeed() {
       } else if (gap > MAX_GAP_TO_FETCH) {
         // Gap too large, just add the new block and update reference
         console.warn(`Gap too large (${gap} blocks), skipping missing blocks`);
-        setBlocks((prev) => [lastBlock, ...prev.slice(0, 49)]);
+        setBlocks((prev) => [lastBlock as unknown as IBlock, ...prev.slice(0, 49)]);
         lastHeightRef.current = newHeight;
       }
     }
@@ -242,9 +246,9 @@ export default function BlockFeed() {
 
 function TransactionList({ blockHeight }: { blockHeight: number }): ReactElement {
   const { t } = useLanguage(); // Added useLanguage hook
-  const { data: block, isLoading } = useQuery<Block>({
+  const { data: block, isLoading } = useQuery<IBlock>({
     queryKey: ['blockTxs', blockHeight],
-    queryFn: () => blockchainAPI.getBlockByHeight(blockHeight),
+    queryFn: () => getNodeApi().blocks.fetchBlockAt(blockHeight) as unknown as Promise<IBlock>,
   });
 
   if (isLoading) {

@@ -23,12 +23,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AddressBalances, Lease, NFT, Transaction } from '@/types';
+import { getNodeApi, type TAssetDetails, type TAssetsBalance } from '@/lib/api';
+import type { Lease, Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import AssetLogo from '../components/shared/AssetLogo'; // New import
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { formatAmount, fromUnix, truncate } from '../components/utils/formatters';
 
 type SortDirection = 'asc' | 'desc';
@@ -48,27 +48,34 @@ export default function Address() {
   const [searchAddress, setSearchAddress] = useState(initialAddress);
   const [address, setAddress] = useState(initialAddress);
 
-  const { data: balances, isLoading: balancesLoading } = useQuery<AddressBalances>({
+  const { data: balances, isLoading: balancesLoading } = useQuery<TAssetsBalance>({
     queryKey: ['balances', address],
-    queryFn: () => blockchainAPI.getAddressBalances(address),
+    queryFn: () =>
+      getNodeApi().assets.fetchAssetsBalance(address) as unknown as Promise<TAssetsBalance>,
     enabled: !!address,
   });
 
   const { data: transactions, isLoading: txLoading } = useQuery<Transaction[][]>({
     queryKey: ['transactions', address],
-    queryFn: () => blockchainAPI.getAddressTransactions(address, 50),
+    queryFn: () =>
+      getNodeApi().transactions.fetchTransactions(address, 50) as unknown as Promise<
+        Transaction[][]
+      >,
     enabled: !!address,
   });
 
-  const { data: nfts, isLoading: nftsLoading } = useQuery<NFT[]>({
+  const { data: nfts, isLoading: nftsLoading } = useQuery<TAssetDetails[]>({
     queryKey: ['nfts', address],
-    queryFn: () => blockchainAPI.getAddressNFTs(address, 100),
+    queryFn: () =>
+      getNodeApi().assets.fetchAssetsAddressLimit(address, 100) as unknown as Promise<
+        TAssetDetails[]
+      >,
     enabled: !!address,
   });
 
   const { data: leases, isLoading: leasesLoading } = useQuery<Lease[]>({
     queryKey: ['leases', address],
-    queryFn: () => blockchainAPI.getActiveLeases(address),
+    queryFn: () => getNodeApi().leasing.fetchActive(address) as unknown as Promise<Lease[]>,
     enabled: !!address,
   });
 
@@ -244,7 +251,7 @@ export default function Address() {
                           <div className="text-right">
                             <p className="font-semibold">
                               {formatAmount(
-                                balance.balance,
+                                Number(balance.balance),
                                 balance.issueTransaction?.decimals || 8,
                               )}
                             </p>

@@ -11,10 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { DexPairData, OrderbookResponse } from '@/types';
+import {
+  type DexPairData,
+  fetchAssetDetailsById,
+  fetchMatcherOrderbook,
+  fetchPairInfo,
+  type OrderbookResponse,
+} from '@/lib/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import AssetLogo from '../shared/AssetLogo';
-import { blockchainAPI } from '../utils/blockchain';
 
 export default function DexPairsWidget() {
   const { t } = useLanguage();
@@ -24,7 +29,7 @@ export default function DexPairsWidget() {
   // Fetch trading pairs
   const { data: orderbook } = useQuery<OrderbookResponse>({
     queryKey: ['matcherOrderbook'],
-    queryFn: () => blockchainAPI.getMatcherOrderbook(),
+    queryFn: () => fetchMatcherOrderbook(),
     staleTime: 60000, // Cache for 1 minute
   });
 
@@ -51,7 +56,7 @@ export default function DexPairsWidget() {
             // Small delay between requests
             await new Promise((resolve) => setTimeout(resolve, 150));
 
-            const pairInfo = await blockchainAPI.getPairInfo(market.amountAsset, market.priceAsset);
+            const pairInfo = await fetchPairInfo(market.amountAsset, market.priceAsset);
 
             if (pairInfo?.data) {
               // Fetch asset details
@@ -60,14 +65,14 @@ export default function DexPairsWidget() {
 
               try {
                 if (market.amountAsset !== 'DCC' && market.amountAsset !== 'WAVES') {
-                  const amountDetails = await blockchainAPI.getAssetDetails(market.amountAsset);
+                  const amountDetails = await fetchAssetDetailsById(market.amountAsset);
                   amountAssetName = amountDetails.name || 'Unknown';
                 } else {
                   amountAssetName = 'DCC';
                 }
 
                 if (market.priceAsset !== 'DCC' && market.priceAsset !== 'WAVES') {
-                  const priceDetails = await blockchainAPI.getAssetDetails(market.priceAsset);
+                  const priceDetails = await fetchAssetDetailsById(market.priceAsset);
                   priceAssetName = priceDetails.name || 'Unknown';
                 } else {
                   priceAssetName = 'DCC';
@@ -94,8 +99,8 @@ export default function DexPairsWidget() {
                 lastPrice: pairInfo.data.lastPrice,
                 volume: pairInfo.data.volume,
                 change24h,
-                high: pairInfo.data.high,
-                low: pairInfo.data.low,
+                high: pairInfo.data.high || 0,
+                low: pairInfo.data.low || 0,
                 txsCount: pairInfo.data.txsCount,
               });
             }

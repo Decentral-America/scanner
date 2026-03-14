@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { AssetDetails, Block, TokenAssetStat } from '@/types';
+import { fetchAssetDetailsById, getNodeApi, type IBlock, type TAssetDetails } from '@/lib/api';
+import type { TokenAssetStat, Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../contexts/LanguageContext';
 import AssetLogo from '../shared/AssetLogo';
-import { blockchainAPI } from '../utils/blockchain';
 import { formatAmount, truncate } from '../utils/formatters';
 
 export default function TokenActivityWidget() {
@@ -28,14 +28,14 @@ export default function TokenActivityWidget() {
         setError(null);
 
         // Get current height
-        const heightData = await blockchainAPI.getHeight();
+        const heightData = await getNodeApi().blocks.fetchHeight();
         const currentHeight = heightData?.height;
 
         if (!currentHeight || !isMounted) return;
 
         // Fetch only last 5 blocks to minimize API calls
         const from = Math.max(1, currentHeight - 4);
-        const blockHeaders = await blockchainAPI.getBlockHeaders(from, currentHeight);
+        const blockHeaders = await getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
 
         if (!isMounted) return;
 
@@ -54,15 +54,15 @@ export default function TokenActivityWidget() {
               setTimeout(() => reject(new Error('Block fetch timeout')), 5000),
             );
 
-            const blockPromise = blockchainAPI.getBlockByHeight(block.height);
-            const fullBlock = (await Promise.race([blockPromise, timeoutPromise])) as Block;
+            const blockPromise = getNodeApi().blocks.fetchBlockAt(block.height);
+            const fullBlock = (await Promise.race([blockPromise, timeoutPromise])) as IBlock;
 
             if (!isMounted) return;
 
             if (fullBlock?.transactions) {
               processedBlocks++;
 
-              for (const tx of fullBlock.transactions) {
+              for (const tx of fullBlock.transactions as unknown as Transaction[]) {
                 // Track Transfer (Type 4) and Mass Transfer (Type 11)
                 if ([4, 11].includes(tx.type) && tx.assetId) {
                   if (!assetStats[tx.assetId]) {
@@ -121,8 +121,8 @@ export default function TokenActivityWidget() {
               setTimeout(() => reject(new Error('Asset details timeout')), 3000),
             );
 
-            const detailsPromise = blockchainAPI.getAssetDetails(asset.assetId);
-            const details = (await Promise.race([detailsPromise, timeoutPromise])) as AssetDetails;
+            const detailsPromise = fetchAssetDetailsById(asset.assetId);
+            const details = (await Promise.race([detailsPromise, timeoutPromise])) as TAssetDetails;
 
             if (isMounted && details) {
               asset.name = details.name || truncate(asset.assetId, 8);

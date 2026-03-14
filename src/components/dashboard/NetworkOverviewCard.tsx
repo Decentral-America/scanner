@@ -6,23 +6,22 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { BlockHeader, HeightResponse } from '@/types';
+import { getNodeApi, type IBlockHeader } from '@/lib/api';
 import { createPageUrl } from '@/utils';
-import { blockchainAPI } from '../utils/blockchain';
 
 export default function NetworkOverviewCard() {
-  const { data: height } = useQuery<HeightResponse>({
+  const { data: height } = useQuery<{ height: number }>({
     queryKey: ['height'],
-    queryFn: () => blockchainAPI.getHeight(),
+    queryFn: () => getNodeApi().blocks.fetchHeight(),
   });
 
   const currentHeight = height?.height || 0;
 
-  const { data: recentBlocks, isLoading } = useQuery<BlockHeader[]>({
+  const { data: recentBlocks, isLoading } = useQuery<IBlockHeader[]>({
     queryKey: ['recentBlocks', currentHeight],
     queryFn: async () => {
       const from = Math.max(1, currentHeight - 49);
-      return blockchainAPI.getBlockHeaders(from, currentHeight);
+      return getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
     },
     enabled: currentHeight > 0,
   });

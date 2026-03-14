@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getNodeApi } from '@/lib/api';
+import type { Transaction as TransactionType } from '@/types';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { formatAmount, fromUnix, truncate } from '../components/utils/formatters';
 
 export default function Transaction() {
@@ -33,13 +34,17 @@ export default function Transaction() {
     queryFn: async () => {
       if (!txId) return null;
       try {
-        const confirmedTx = await blockchainAPI.getTransaction(txId);
+        const confirmedTx = (await getNodeApi().transactions.fetchInfo(
+          txId,
+        )) as unknown as TransactionType;
         if (confirmedTx) return confirmedTx;
       } catch (err) {
         console.warn('Failed to fetch confirmed transaction:', err);
       }
       try {
-        const unconfirmedTx = await blockchainAPI.getUnconfirmedTransaction(txId);
+        const unconfirmedTx = (await getNodeApi().transactions.fetchUnconfirmedInfo(
+          txId,
+        )) as unknown as TransactionType;
         if (unconfirmedTx) return unconfirmedTx;
       } catch (err) {
         console.warn('Failed to fetch unconfirmed transaction:', err);
@@ -180,7 +185,7 @@ export default function Transaction() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-2">{t('fee')}</p>
-                      <p className="font-semibold">{formatAmount(tx.fee)} DC</p>
+                      <p className="font-semibold">{formatAmount(Number(tx.fee))} DC</p>
                     </div>
                     {tx.height && (
                       <div>

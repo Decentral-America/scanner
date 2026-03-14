@@ -4,7 +4,8 @@ import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { blockchainAPI } from '../components/utils/blockchain';
+import { getNodeApi } from '@/lib/api';
+import type { PeersResponse } from '@/types';
 import 'leaflet/dist/leaflet.css';
 import { Globe, Info, MapPin } from 'lucide-react';
 import { useLanguage } from '../components/contexts/LanguageContext';
@@ -32,12 +33,12 @@ export default function NetworkMap() {
 
   const { data: connectedPeers, isLoading } = useQuery({
     queryKey: ['peers', 'connected'],
-    queryFn: () => blockchainAPI.getConnectedPeers(),
+    queryFn: () => getNodeApi().peers.fetchConnected() as unknown as Promise<PeersResponse>,
   });
 
   const { data: allPeers } = useQuery({
     queryKey: ['peers', 'all'],
-    queryFn: () => blockchainAPI.getAllPeers(),
+    queryFn: () => getNodeApi().peers.fetchAll() as unknown as Promise<PeersResponse>,
   });
 
   const geolocatedPeers = useMemo(() => {

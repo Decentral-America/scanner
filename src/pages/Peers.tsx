@@ -14,9 +14,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getNodeApi } from '@/lib/api';
 import type { NodeRegistrationRecord, Peer, PeersResponse } from '@/types';
 import { useLanguage } from '../components/contexts/LanguageContext';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { fromUnix } from '../components/utils/formatters';
 
 type PeerApiShape = Peer[] | PeersResponse | null | undefined;
@@ -42,22 +42,22 @@ export default function Peers() {
 
   const { data: connected, isLoading: connectedLoading } = useQuery<PeersResponse>({
     queryKey: ['peers', 'connected'],
-    queryFn: () => blockchainAPI.getConnectedPeers(),
+    queryFn: () => getNodeApi().peers.fetchConnected() as unknown as Promise<PeersResponse>,
   });
 
   const { data: all, isLoading: allLoading } = useQuery<PeersResponse>({
     queryKey: ['peers', 'all'],
-    queryFn: () => blockchainAPI.getAllPeers(),
+    queryFn: () => getNodeApi().peers.fetchAll() as unknown as Promise<PeersResponse>,
   });
 
   const { data: suspended, isLoading: suspendedLoading } = useQuery<PeerApiShape>({
     queryKey: ['peers', 'suspended'],
-    queryFn: () => blockchainAPI.getSuspendedPeers(),
+    queryFn: () => getNodeApi().peers.fetchSuspended() as unknown as Promise<PeerApiShape>,
   });
 
   const { data: blacklisted, isLoading: blacklistedLoading } = useQuery<PeerApiShape>({
     queryKey: ['peers', 'blacklisted'],
-    queryFn: () => blockchainAPI.getBlacklistedPeers(),
+    queryFn: () => getNodeApi().peers.fetchBlackListed() as unknown as Promise<PeerApiShape>,
   });
 
   // Fetch node registrations

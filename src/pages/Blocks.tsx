@@ -13,10 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getNodeApi } from '@/lib/api';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/contexts/LanguageContext';
 import CopyButton from '../components/shared/CopyButton';
-import { blockchainAPI } from '../components/utils/blockchain';
 import { fromUnix, truncate } from '../components/utils/formatters';
 
 export default function Blocks() {
@@ -24,7 +24,7 @@ export default function Blocks() {
 
   const { data: height } = useQuery({
     queryKey: ['height'],
-    queryFn: () => blockchainAPI.getHeight(),
+    queryFn: () => getNodeApi().blocks.fetchHeight(),
   });
 
   const currentHeight = height?.height || 0;
@@ -35,7 +35,7 @@ export default function Blocks() {
 
   const { data: blocks, isLoading } = useQuery({
     queryKey: ['blockHeaders', fromHeight, toHeight],
-    queryFn: () => blockchainAPI.getBlockHeaders(fromHeight, toHeight),
+    queryFn: () => getNodeApi().blocks.fetchHeadersSeq(fromHeight, toHeight),
     enabled: currentHeight > 0,
   });
 

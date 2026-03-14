@@ -16,46 +16,40 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type {
-  BlockHeader,
-  HeightResponse,
-  NodeStatusResponse,
-  NodeVersionResponse,
-  PeersResponse,
-} from '@/types';
+import { getNodeApi, type IBlockHeader, type INodeStatus, type INodeVersion } from '@/lib/api';
+import type { PeersResponse } from '@/types';
 import { useLanguage } from '../components/contexts/LanguageContext';
-import { blockchainAPI } from '../components/utils/blockchain';
 
 export default function NetworkStatistics() {
   const { t } = useLanguage();
 
-  const { data: height } = useQuery<HeightResponse>({
+  const { data: height } = useQuery<{ height: number }>({
     queryKey: ['height'],
-    queryFn: () => blockchainAPI.getHeight(),
+    queryFn: () => getNodeApi().blocks.fetchHeight(),
   });
 
-  const { data: nodeStatus } = useQuery<NodeStatusResponse>({
+  const { data: nodeStatus } = useQuery<INodeStatus>({
     queryKey: ['nodeStatus'],
-    queryFn: () => blockchainAPI.getNodeStatus(),
+    queryFn: () => getNodeApi().node.fetchNodeStatus() as unknown as Promise<INodeStatus>,
   });
 
-  const { data: nodeVersion } = useQuery<NodeVersionResponse>({
+  const { data: nodeVersion } = useQuery<INodeVersion>({
     queryKey: ['nodeVersion'],
-    queryFn: () => blockchainAPI.getNodeVersion(),
+    queryFn: () => getNodeApi().node.fetchNodeVersion() as unknown as Promise<INodeVersion>,
   });
 
   const { data: connectedPeers } = useQuery<PeersResponse>({
     queryKey: ['peers', 'connected'],
-    queryFn: () => blockchainAPI.getConnectedPeers(),
+    queryFn: () => getNodeApi().peers.fetchConnected() as unknown as Promise<PeersResponse>,
   });
 
   const currentHeight = height?.height || 0;
 
-  const { data: recentBlocks, isLoading: blocksLoading } = useQuery<BlockHeader[]>({
+  const { data: recentBlocks, isLoading: blocksLoading } = useQuery<IBlockHeader[]>({
     queryKey: ['recentBlocks', currentHeight],
     queryFn: async () => {
       const from = Math.max(1, currentHeight - 99);
-      return blockchainAPI.getBlockHeaders(from, currentHeight);
+      return getNodeApi().blocks.fetchHeadersSeq(from, currentHeight);
     },
     enabled: currentHeight > 0,
   });

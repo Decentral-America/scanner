@@ -5,15 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getNodeApi } from '@/lib/api';
 import type { Transaction } from '@/types';
 import { createPageUrl } from '@/utils';
-import { blockchainAPI } from '../utils/blockchain';
 import { timeAgo, truncate } from '../utils/formatters';
 
 export default function UnconfirmedTxWidget() {
   const { data: transactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['unconfirmedTransactions'],
-    queryFn: () => blockchainAPI.getUnconfirmedTransactions(),
+    queryFn: async () => {
+      const result = await getNodeApi().transactions.fetchUnconfirmed();
+      return result as unknown as Transaction[];
+    },
     refetchInterval: 10000,
   });
 
