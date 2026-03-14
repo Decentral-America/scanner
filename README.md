@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React 18" />
-  <img src="https://img.shields.io/badge/Vite-6.1-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 6" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-8.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 8" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4.2-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4" />
   <img src="https://img.shields.io/badge/Radix_UI-1.0-161618?style=for-the-badge&logo=radixui&logoColor=white" alt="Radix UI" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
 </p>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Real-time block feeds · Transaction tracing · Address analytics · Asset tracking · DEX pair monitoring · Network topology maps · Node management · Admin dashboard
+  Real-time block feeds · Transaction tracing · Address analytics · Asset tracking · DEX pair monitoring · Network topology maps · Node status
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 ## 📖 About
 
-**DecentralScan** is a production-ready, open-source blockchain explorer frontend designed for the **DecentralChain (DCC)** network. Built with **React 18**, **Vite 6**, and **Tailwind CSS**, it provides an intuitive interface for exploring blocks, transactions, addresses, digital assets, and network health in real time.
+**DecentralScan** is a production-ready, open-source blockchain explorer frontend designed for the **DecentralChain (DCC)** network. Built with **React 19**, **Vite 8**, and **Tailwind CSS 4**, it provides an intuitive interface for exploring blocks, transactions, addresses, digital assets, and network health in real time.
 
 Whether you're a node operator monitoring uptime, a developer debugging transactions, or a community member tracking token activity — DecentralScan gives you full transparency into chain state with blazing-fast performance and a beautiful, responsive UI.
 
@@ -36,7 +36,6 @@ Whether you're a node operator monitoring uptime, a developer debugging transact
 
 - **Zero backend required** — Connects directly to DCC node REST APIs for live blockchain data
 - **Instant search** — Look up any block, transaction, or address from the global search bar
-- **Role-based access** — Admin panels for user/node management, public dashboards for everyone
 - **Internationalized** — Built-in English & Spanish with easily extensible translations
 - **Dark/Light theme** — System-aware theming that respects user preferences
 - **Fully tested** — Unit tests (Vitest) + E2E tests (Playwright) + CI pipeline
@@ -62,7 +61,6 @@ Whether you're a node operator monitoring uptime, a developer debugging transact
 | **Network Dashboard** | At-a-glance stats — block height, total transactions, active nodes, TPS |
 | **Network Statistics** | Historical charts for transactions, blocks, fees, and network activity |
 | **DEX Pairs** | Decentralized exchange pair listings with price, volume, and liquidity data |
-| **Admin Analytics** | Admin-only dashboards with user growth, page views, and system metrics |
 | **Sustainability View** | Energy and sustainability metrics for the DCC proof-of-stake network |
 
 ### 🌐 Network & Nodes
@@ -70,26 +68,17 @@ Whether you're a node operator monitoring uptime, a developer debugging transact
 |---------|-------------|
 | **Network Map** | Interactive geographic map of all known network nodes (Leaflet) |
 | **Peers List** | Connected peer table with version, height, and latency |
-| **Node Registration** | Public form for community members to register & track their DCC nodes |
-| **Admin Node Management** | Approve/reject node registrations, configure ownership percentages |
-
-### 👤 User System
-| Feature | Description |
-|---------|-------------|
-| **Authentication** | Register/login with email & password, role-based access (user/admin) |
-| **User Dashboard** | Personal dashboard with watched addresses, bookmarked transactions |
-| **Profile Management** | Update display name, email, and preferences |
-| **Admin Panel** | Full user management — role assignment, account editing, node config |
+| **Node Status** | Live node version, height, generator status from the chain |
 
 ### 🛠 Developer Experience
 | Feature | Description |
 |---------|-------------|
-| **Vite 6 + HMR** | Sub-second hot module replacement for rapid development |
+| **Vite 8 + HMR** | Sub-second hot module replacement for rapid development |
 | **Path Aliases** | Clean `@/` imports mapped to `src/` |
 | **Code Splitting** | Automatic vendor chunking for optimal bundle sizes |
 | **Vitest** | Fast unit testing with React Testing Library |
 | **Playwright** | End-to-end browser tests with CI integration |
-| **ESLint** | Consistent code quality enforcement |
+| **Biome** | Consistent formatting + lint enforcement |
 | **CI/CD** | GitHub Actions pipeline — lint, typecheck, test, build on every push |
 | **Docker** | Production-ready multi-stage Docker build with Nginx |
 
@@ -104,27 +93,22 @@ dccscan_new_frontend/
 ├── e2e/                         # Playwright E2E tests
 ├── src/
 │   ├── api/
-│   │   ├── auth.js              # Authentication module (register/login/logout)
-│   │   ├── entities.js          # Entity CRUD factory (localStorage)
-│   │   └── integrations.js      # File upload & utility integrations
+│   │   └── entities.ts          # Entity CRUD factory (localStorage)
 │   ├── components/
-│   │   ├── analytics/           # Analytics tracking components
 │   │   ├── contexts/            # React contexts (Language, etc.)
 │   │   ├── dashboard/           # Dashboard widget components
 │   │   ├── shared/              # Shared components (SearchBar, CopyButton)
-│   │   ├── ui/                  # 44+ Radix UI primitives (shadcn/ui)
-│   │   ├── ErrorBoundary.jsx    # Global error boundary with recovery
-│   │   ├── ProtectedRoute.jsx   # Auth & role-based route guard
-│   │   └── ThemeProvider.jsx    # Dark/light theme provider
+│   │   ├── ui/                  # 18 Radix UI primitives (shadcn/ui)
+│   │   ├── ErrorBoundary.tsx    # Global error boundary with recovery
+│   │   └── ThemeProvider.tsx    # Dark/light theme provider
 │   ├── hooks/                   # Custom React hooks
 │   ├── lib/
-│   │   ├── AuthContext.jsx      # Auth state context & provider
-│   │   ├── query-client.js      # React Query configuration
-│   │   └── utils.js             # Utility functions (cn, etc.)
-│   ├── pages/                   # 24 page components (see Features)
-│   ├── App.jsx                  # Root component with routing
-│   ├── Layout.jsx               # Shell layout (nav, header, footer)
-│   └── main.jsx                 # Entry point
+│   │   ├── query-client.ts      # React Query configuration
+│   │   └── utils.ts             # Utility functions (cn, etc.)
+│   ├── pages/                   # 17 page components (see Features)
+│   ├── App.tsx                  # Root component with routing
+│   ├── Layout.tsx               # Shell layout (nav, header, footer)
+│   └── main.tsx                 # Entry point
 ├── Dockerfile                   # Multi-stage production build
 ├── docker-compose.yml           # One-command deployment
 ├── nginx.conf                   # Production Nginx configuration
@@ -137,14 +121,13 @@ dccscan_new_frontend/
 
 | Layer | Technology |
 |-------|-----------|
-| **Framework** | React 18 with Hooks |
-| **Build Tool** | Vite 6.1 |
-| **Routing** | React Router 6 |
+| **Framework** | React 19 with Hooks |
+| **Build Tool** | Vite 8 |
+| **Routing** | React Router 7 |
 | **State Management** | React Query 5 (TanStack Query) |
-| **UI Components** | Radix UI + shadcn/ui (44 primitives) |
-| **Styling** | Tailwind CSS 3.4 |
-| **Forms** | React Hook Form + Zod validation |
-| **Charts** | Recharts 2 |
+| **UI Components** | Radix UI + shadcn/ui |
+| **Styling** | Tailwind CSS 4.2 |
+| **Charts** | Recharts 3 |
 | **Maps** | Leaflet + React-Leaflet |
 | **Icons** | Lucide React |
 | **Theming** | next-themes (dark/light/system) |
@@ -182,10 +165,6 @@ The app will be running at **http://localhost:5173**.
 
 Copy the example environment file and configure as needed:
 
-```bash
-cp .env.example .env
-```
-
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `VITE_SENTRY_DSN` | Sentry DSN for error tracking | No |
@@ -199,13 +178,19 @@ cp .env.example .env
 | `npm run dev` | Start Vite dev server with HMR |
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
+| `npm run lint` | Run Biome checks (no auto-fix) |
+| `npm run lint:fix` | Run Biome checks with auto-fix |
+| `npm run lint:check` | Alias for strict Biome checks |
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm test` | Run unit tests in watch mode |
 | `npm run test:run` | Run unit tests once |
 | `npm run test:coverage` | Run tests with coverage report |
 | `npm run test:e2e` | Run Playwright E2E tests |
+| `npm run ci:check` | Run lint + typecheck + tests + build + high-severity audit |
+
+### Lint Policy
+
+This repo enforces a strict Biome baseline in CI. Warnings are treated as failures for core quality rules (including unused code patterns and unstable React keys), so `npm run lint` and `npm run ci:check` must stay clean before merge.
 
 ---
 
@@ -261,11 +246,10 @@ npm run test:e2e
 | Area | Tests |
 |------|-------|
 | **ErrorBoundary** | Error display, recovery, fallback UI |
-| **ProtectedRoute** | Auth guards, admin role enforcement, redirects |
 | **LanguageContext** | i18n switching, translation keys, persistence |
 | **Error Logger** | Error formatting, Sentry integration, rate limiting |
 | **Utilities** | Class name merging, helper functions |
-| **E2E** | Full user flows — login, navigation, search |
+| **E2E** | Full user flows — navigation, search |
 
 ---
 
@@ -286,7 +270,7 @@ The app supports **light**, **dark**, and **system** themes powered by `next-the
 
 - Theme toggle is available in the top navigation bar
 - Colors are defined as HSL CSS variables in `tailwind.config.js`
-- All 44+ Radix UI components automatically adapt to the active theme
+- All 18 Radix UI components automatically adapt to the active theme
 
 ---
 
